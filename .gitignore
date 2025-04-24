@@ -1,0 +1,58 @@
+#Пререквизиты:
+*.d
+
+#Скомпилированные объектные файлы:
+*.slo
+*.lo
+*.o
+*.obj
+
+#Предварительно скомпилированные заголовки
+*.gch
+*.pch
+
+# Fortran module files
+*.mod
+*.smod
+
+#Скомпилированные динамические библиотеки
+*.so
+*.dylib
+*.dll
+
+#Файлы резервных копий редактора
+*~
+.*.swp
+
+#Скомпилированные статические библиотеки
+*.lai
+*.la
+*.a
+*.lib
+#Исполняемые файлы
+*.exe
+*.out
+*.app
+
+#файлы сборки
+.ninja_*
+CMakeFiles/*
+Testing/*
+.cmake/*
+CMakeCache.txt
+build_ninja
+cmake_install.cmake
+cmake-*
+build/*
+vcpkg_installed
+
+# ide code editors ignore
+checks.json
+.vscode/
+.idea/
+.vs/
+.cache
+out
+
+#doxygen
+doxygen_output/
