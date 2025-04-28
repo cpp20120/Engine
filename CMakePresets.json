@@ -16,7 +16,7 @@
         "BUILD_ALL_TESTS": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
-          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+          "value": "E:/vcpkg/scripts/buildsystems/vcpkg.cmake"
         }
       }
     },
@@ -74,7 +74,7 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "E:/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
-        "VCPKG_MANIFEST_DIR": "${sourceDir}",
+        "VCPKG_MANIFEST_DIR": "${CMAKE_SOURCE_DIR}",
         "VCPKG_MANIFEST_MODE": "on"
       }
     },
@@ -84,7 +84,7 @@
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "E:/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_TARGET_TRIPLET": "x64-windows",
-        "VCPKG_MANIFEST_DIR": "${sourceDir}",
+        "VCPKG_MANIFEST_DIR": "${CMAKE_SOURCE_DIR}",
         "VCPKG_MANIFEST_MODE": "on"
       }
     },

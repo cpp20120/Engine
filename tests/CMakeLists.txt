@@ -28,7 +28,7 @@ add_custom_target(run_all_tests
 )
 
 # Добавляем зависимости всех тестов
-foreach(test_target IN ITEMS lib1_test lib2_test TEST_PROJECT_tests)
+foreach(test_target IN ITEMS CoreMath_test lib2_test TEST_PROJECT_tests)
     if(TARGET ${test_target})
         add_dependencies(run_all_tests ${test_target})
     endif()

@@ -1,7 +1,6 @@
 #ifndef INCLUDE_HPP
 #define INCLUDE_HPP
 
-
 namespace proj {
 /**
  *
@@ -9,9 +8,7 @@ namespace proj {
  * @param b second int parameter
  * @return sum of both
  */
-static int func(const int a, const int b) {
-  return a + b;
-}
-}
+static int func(const int a, const int b) { return a + b; }
+}  // namespace proj
 
 #endif

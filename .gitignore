@@ -45,6 +45,7 @@ cmake_install.cmake
 cmake-*
 build/*
 vcpkg_installed
+out
 
 # ide code editors ignore
 checks.json

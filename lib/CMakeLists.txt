@@ -1,6 +1,6 @@
 # Добавляем библиотеки
-add_subdirectory(library1)
-add_subdirectory(library2)
+add_subdirectory(CoreMath)
+add_subdirectory(CoreMeta)
 
 # Настройка тестов
 option(BUILD_TESTS "Build tests" ON)
@@ -12,8 +12,8 @@ if(BUILD_TESTS)
 
     if(BUILD_ALL_TESTS)
         # Добавляем тестовые поддиректории
-        add_subdirectory(tests/lib1_test)
-        add_subdirectory(tests/lib2_test)
+        add_subdirectory(tests/CoreMath_test)
+        add_subdirectory(tests/CoreMeta_test)
 
         # Общая цель для запуска всех тестов
         add_custom_target(run_all_libs_tests
@@ -23,7 +23,7 @@ if(BUILD_TESTS)
         )
 
         # Добавляем зависимости если цели существуют
-        foreach(test_target IN ITEMS lib1_test lib2_test)
+        foreach(test_target IN ITEMS CoreMath_test CoreMeta_test)
             if(TARGET ${test_target})
                 add_dependencies(run_all_libs_tests ${test_target})
             endif()

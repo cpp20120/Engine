@@ -1,11 +1,33 @@
 {
   "name": "testproject",
   "version": "1.0.0",
+  "builtin-baseline": "6760f636e7bcd0dd034c5c0906f6174009465c29",
   "dependencies": [
+    {
+      "name": "fmt",
+      "version>=": "11.0.2"
+    },
     {
       "name": "gtest",
       "version>=": "1.10.0"
+    },
+    {
+      "name": "hwloc",
+      "version>=": "2.11.2"
+    },
+    {
+      "name": "mdspan",
+      "version>=": "0.6.0"
+    },
+    {
+      "name": "folly",
+      "version>=": "2025.04.14.00#0"
     }
   ],
-  "builtin-baseline": "3426db05b996481ca31e95fff3734cf23e0f51bc"
+  "overrides": [
+    {
+      "name": "gtest",
+      "version": "1.16.0#1"
+    }
+  ]
 }

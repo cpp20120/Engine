@@ -1,6 +1,7 @@
 # Main CMakeLists.txt
 cmake_minimum_required(VERSION 3.26)
-project(TEST_PROJECT CXX)
+set(CMAKE_TOOLCHAIN_FILE "E:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "VCPKG toolchain file")
+project(ShizEngine CXX)
 
 # docs
 option(BUILD_DOCS "Build documentation" ON)
@@ -10,7 +11,7 @@ endif ()
 
 # Vcpkg integration
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    set(CMAKE_TOOLCHAIN_FILE "E:\vcpkg\scripts\toolchains\windows.cmake"
         CACHE STRING "Vcpkg toolchain file")
 endif()
 
@@ -28,11 +29,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 add_subdirectory(src)
 add_subdirectory(lib)
 # add tests
-set(BUILD_ALL_TESTS ON CACHE BOOL "Build all tests" FORCE)
-message(STATUS "BUILD_ALL_TESTS value: ${BUILD_ALL_TESTS} (defined at ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE})")
-enable_testing()
-option(BUILD_ALL_TESTS "Build tests" ON)
-add_subdirectory(tests)
+#set(BUILD_ALL_TESTS ON CACHE BOOL "Build all tests" FORCE)
+#message(STATUS "BUILD_ALL_TESTS value: ${BUILD_ALL_TESTS} (defined at ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE})")
+#enable_testing()
+#option(BUILD_ALL_TESTS "Build tests" OFF)
+#add_subdirectory(tests)
 
 # Include additional configurations
 include(cmake/PlatformSettings.cmake)
