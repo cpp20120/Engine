@@ -65,8 +65,6 @@ class Vector {
   constexpr auto begin() noexcept { return data_.begin(); }
   constexpr auto end() noexcept { return data_.end(); }
 
-  template <size_t Start, size_t End>
-  auto slice() { /* ... */ }
   /// @}
 
   /// @name Element Access
