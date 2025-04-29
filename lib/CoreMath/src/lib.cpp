@@ -1,11 +1,11 @@
-#include "../include/diffeq.hpp"
-#include "../include/matrix.hpp"
 #include <iostream>
 #include <random>
+
+#include "../include/diffeq.hpp"
+#include "../include/matrix.hpp"
 using namespace core::math::matrix;
 
-
-auto equation = []([[maybe_unused]]double t, double y) { return y; };
+auto equation = []([[maybe_unused]] double t, double y) { return y; };
 
 auto problem = core::math::diffeq::make_ivp(equation, 0.0, 1.0, "y' = y");
 
@@ -27,7 +27,7 @@ auto matSum = matA + identity;
 // Умножение на скаляр
 auto matScaled = matA * 2.5f;
 
- // Умножение матриц
+// Умножение матриц
 core::math::matrix::mat3x3 matB = {9.0f, 8.0f, 7.0f, 6.0f, 5.0f,
                                    4.0f, 3.0f, 2.0f, 1.0f};
 auto matProduct = matA * matB;
@@ -49,38 +49,36 @@ auto rotateX =
     core::math::matrix::transform::rotate3d_x(3.14159f / 6);  // 30 градусов
 auto perspective = core::math::matrix::mat4x4::identity();
 
- auto [L, U, P] = core::math::matrix::lu_decomposition(matA);
+auto [L, U, P] = core::math::matrix::lu_decomposition(matA);
 // QR-декомпозиция
- auto [Q, R] = core::math::matrix::qr_decomposition(matA);
- // Получение подматрицы (срез)
- auto submatrix = matA.slice<1, 3, 0, 2>();  // строки 1-2, столбцы 0-1
+auto [Q, R] = core::math::matrix::qr_decomposition(matA);
+// Получение подматрицы (срез)
+auto submatrix = matA.slice<1, 3, 0, 2>();  // строки 1-2, столбцы 0-1
 
 // Получение строки и столбца
- auto row = core::math::matrix::get_row(matA, 1);  // вторая строка
- auto col = core::math::matrix::get_column(matA, 2);  // третий столбец
+auto row = core::math::matrix::get_row(matA, 1);     // вторая строка
+auto col = core::math::matrix::get_column(matA, 2);  // третий столбец
 
 // Матрица поворота на 90 градусов
- auto rot90 = core::math::matrix::transform::rotate2d(3.14159f / 2);
+auto rot90 = core::math::matrix::transform::rotate2d(3.14159f / 2);
 
 // 1. Create 3x3 matrix with random floats in default range [0, 1]
- //core::math::matrix::Matrix<float, 3, 3> mat1;
+// core::math::matrix::Matrix<float, 3, 3> mat1;
 // core::math::matrix::randomize(mat1);
 
- // 2. Double matrix with range [-5.0, 5.0]
- //core::math::matrix::Matrix<double, 2, 2> mat2;
- //core::math::matrix::randomize(mat2, -5.0, 5.0);
+// 2. Double matrix with range [-5.0, 5.0]
+// core::math::matrix::Matrix<double, 2, 2> mat2;
+// core::math::matrix::randomize(mat2, -5.0, 5.0);
 
- // 3. Float matrix with symmetric range [-10.0f, 10.0f]
- //core::math::matrix::Matrix<float, 4, 4> mat3;
- //core::math::matrix::randomize(mat3, 10.0f);
+// 3. Float matrix with symmetric range [-10.0f, 10.0f]
+// core::math::matrix::Matrix<float, 4, 4> mat3;
+// core::math::matrix::randomize(mat3, 10.0f);
 
- // 4. Integer matrix [1, 100]
- //core::math::matrix::Matrix<int, 3, 3> mat4;
- //core::math::matrix::randomize(mat4, 1, 100);
+// 4. Integer matrix [1, 100]
+// core::math::matrix::Matrix<int, 3, 3> mat4;
+// core::math::matrix::randomize(mat4, 1, 100);
 
- // 5. Custom generator
- //std::mt19937 gen(42);
- //core::math::matrix::Matrix<double, 2, 2> mat5;
- //core::math::matrix::randomize(mat5, 0.0, 1.0, gen);
-
-   
+// 5. Custom generator
+// std::mt19937 gen(42);
+// core::math::matrix::Matrix<double, 2, 2> mat5;
+// core::math::matrix::randomize(mat5, 0.0, 1.0, gen);

@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "../../CoreMath/include/diffeq.hpp"
 #include "../../CoreMath/include/matrix.hpp"
 #include "diffeq.hpp"
-#include <stdexcept>
 
 using namespace core::math::diffeq;
 using namespace core::math::matrix;

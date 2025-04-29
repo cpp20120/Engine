@@ -34,7 +34,7 @@ concept ArithmeticValue = requires([[maybe_unused]] T a, [[maybe_unused]] T b) {
   requires std::is_arithmetic_v<T>;
   { a + b } -> std::same_as<T>;
   { a - b } -> std::same_as<T>;
-  { a* b } -> std::same_as<T>;
+  { a * b } -> std::same_as<T>;
   { a / b } -> std::same_as<T>;
   { -a } -> std::same_as<T>;
 };
@@ -453,8 +453,7 @@ constexpr T determinant(const Matrix<T, N, N>& matrix) {
  */
 template <typename T, size_t N>
 T determinant_via_lu(const Matrix<T, N, N>& matrix) {
-  auto [L, U, P] = lu_decomposition(
-      matrix);
+  auto [L, U, P] = lu_decomposition(matrix);
   T det = 1;
   for (size_t i = 0; i < N; ++i) {
     det *= U(i, i);  /// Произведение диагональных элементов U
@@ -858,7 +857,6 @@ void randomize(Matrix<T, Rows, Cols>& matrix, T min, T max, Generator& gen) {
     }
   }
 }
-
 
 /**
  * @brief QR decomposition using Householder method

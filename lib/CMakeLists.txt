@@ -1,6 +1,8 @@
 # Добавляем библиотеки
 add_subdirectory(CoreMath)
 add_subdirectory(CoreMeta)
+add_subdirectory(CoreConcurency)
+add_subdirectory(CoreAlgorithmsDS)
 
 # Настройка тестов
 option(BUILD_TESTS "Build tests" ON)

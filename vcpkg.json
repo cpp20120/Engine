@@ -12,16 +12,16 @@
       "version>=": "1.10.0"
     },
     {
-      "name": "hwloc",
-      "version>=": "2.11.2"
-    },
-    {
       "name": "mdspan",
       "version>=": "0.6.0"
     },
     {
       "name": "folly",
       "version>=": "2025.04.14.00#0"
+    },
+    {
+      "name": "tbb",
+      "version>=": "2022.1.0#0"
     }
   ],
   "overrides": [

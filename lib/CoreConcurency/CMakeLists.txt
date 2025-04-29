@@ -7,12 +7,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 #find_package(fmt)
 find_package(TBB CONFIG REQUIRED)
-find_package
+
 #find_package(mdspan REQUIRED)
 
 add_subdirectory(src)
 #target_link_libraries(CoreConcurency PRIVATE fmt::fmt)
-target_link_libraries(CoreConcurency PRIVATE TBB::tbb)
+target_link_libraries(CoreConcurency PRIVATE TBB::tbb TBB::tbbmalloc TBB::tbbmalloc_proxy)
 #target_link_libraries(CoreConcurency PRIVATE mdspan::mdspan)
 # Версионирование
 set_target_properties(CoreConcurency PROPERTIES

@@ -355,7 +355,7 @@ class Vector {
   }
   /**
    * @brief Cross Product
-   * @param other const ref to vector 
+   * @param other const ref to vector
    * @return Cross product of vector
    */
   constexpr Vector cross(const Vector& other) const

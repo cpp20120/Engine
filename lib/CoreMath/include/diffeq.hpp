@@ -30,7 +30,7 @@ concept ArithmeticValue = requires([[maybe_unused]] T a, [[maybe_unused]] T b) {
   requires std::is_arithmetic_v<T>;
   { a + b } -> std::same_as<T>;
   { a - b } -> std::same_as<T>;
-  { a* b } -> std::same_as<T>;
+  { a * b } -> std::same_as<T>;
   { a / b } -> std::same_as<T>;
   { -a } -> std::same_as<T>;
 };

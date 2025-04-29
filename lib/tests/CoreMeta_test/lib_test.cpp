@@ -9,7 +9,7 @@ using core::math::meta;
 TEST(SumOfNumbersTest2, PositiveNumbers) {
   std::print("SecondLib Tests\n");
   ASSERT_EQ(5, sum_of_numbers(2, 3));
-  ASSERT_EQ(10,sum_of_numbers(5, 5));
+  ASSERT_EQ(10, sum_of_numbers(5, 5));
   ASSERT_EQ(100, sum_of_numbers(50, 50));
 }
 
