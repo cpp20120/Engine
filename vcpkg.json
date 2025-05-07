@@ -22,6 +22,10 @@
     {
       "name": "tbb",
       "version>=": "2022.1.0#0"
+    },
+    {
+      "name": "libassert",
+      "version>=": "2.1.5"
     }
   ],
   "overrides": [

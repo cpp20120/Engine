@@ -19,13 +19,11 @@ set_target_properties(CoreMeta PROPERTIES
         SOVERSION 1
 )
 
-#include(cmake/LibraryExportSettings.cmake)
 include(cmake/LibraryCompilerSettings.cmake)
-include(cmake/LibraryLinkageSettings.cmake)
-#include(cmake/LibraryInstallSettings.cmake)
 
 include(cmake/LibraryCP.cmake)
 
+target_include_directories(include)
 
 option(BUILD_SHARED_LIBS "Build as shared library" OFF)
 option(BUILD_TESTS "Build tests" OFF)

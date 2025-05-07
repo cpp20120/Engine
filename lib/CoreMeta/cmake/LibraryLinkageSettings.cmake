@@ -1,6 +1,5 @@
 
 
-# 5. Подключаем остальные настройки ПОСЛЕ создания цели
 include(cmake/LibraryCompilerSettings.cmake)
 include(cmake/LibraryExportSettings.cmake)
 
@@ -44,17 +43,14 @@ function(configure_library_type TARGET_NAME)
     endif()
 endfunction()
 
-# 7. Вызываем функцию конфигурации
 configure_library_type(CoreMeta)
 
-# 8. Версионирование
 set(LIB_VERSION 1.0.0)
 set_target_properties(CoreMeta PROPERTIES
         VERSION ${LIB_VERSION}
         SOVERSION 1
 )
 
-# 9. Директории include
 target_include_directories(CoreMeta PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -21,13 +21,10 @@ core::math::matrix::mat3x3 matA{1.0f, 2.0f, 3.0f, 4.0f, 5.0f,
                                 6.0f, 7.0f, 8.0f, 9.0f};
 auto identity = core::math::matrix::mat3x3::identity();
 
-// Сложение матриц
 auto matSum = matA + identity;
 
-// Умножение на скаляр
 auto matScaled = matA * 2.5f;
 
-// Умножение матриц
 core::math::matrix::mat3x3 matB = {9.0f, 8.0f, 7.0f, 6.0f, 5.0f,
                                    4.0f, 3.0f, 2.0f, 1.0f};
 auto matProduct = matA * matB;
@@ -40,24 +37,22 @@ auto rotate =
     core::math::matrix::transform::rotate2d(3.14159f / 4);  // 45 градусов
 auto scale = core::math::matrix::transform::scale2d(2.0f, 3.0f);
 
-// Комбинирование преобразований (масштаб -> поворот -> перенос)
 auto transform2D = translate * rotate * scale;
 
-// 3D преобразования
 auto translate3D = core::math::matrix::transform::translate3d(1.0f, 2.0f, 3.0f);
 auto rotateX =
-    core::math::matrix::transform::rotate3d_x(3.14159f / 6);  // 30 градусов
+    core::math::matrix::transform::rotate3d_x(3.14159f / 6);  
 auto perspective = core::math::matrix::mat4x4::identity();
 
 auto [L, U, P] = core::math::matrix::lu_decomposition(matA);
-// QR-декомпозиция
-auto [Q, R] = core::math::matrix::qr_decomposition(matA);
-// Получение подматрицы (срез)
-auto submatrix = matA.slice<1, 3, 0, 2>();  // строки 1-2, столбцы 0-1
 
-// Получение строки и столбца
-auto row = core::math::matrix::get_row(matA, 1);     // вторая строка
-auto col = core::math::matrix::get_column(matA, 2);  // третий столбец
+auto [Q, R] = core::math::matrix::qr_decomposition(matA);
+
+auto submatrix = matA.slice<1, 3, 0, 2>(); 
+
+
+auto row = core::math::matrix::get_row(matA, 1);    
+auto col = core::math::matrix::get_column(matA, 2); 
 
 // Матрица поворота на 90 градусов
 auto rot90 = core::math::matrix::transform::rotate2d(3.14159f / 2);

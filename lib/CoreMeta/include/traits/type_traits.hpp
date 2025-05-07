@@ -8,6 +8,450 @@
 
 namespace core::meta::type_traits {
 
+template <typename T>
+constexpr T e = T(2.7182818284590452353);
+
+template <typename T>
+constexpr T pi = T(3.1415926535897932385);
+
+template <auto N, typename T = std::remove_cvref_t<decltype(N)>>
+using c_ = std::integral_constant<T, N>;
+
+using c_0 = c_<0>;
+
+using c_1 = c_<1>;
+
+using c_2 = c_<2>;
+
+using c_3 = c_<3>;
+
+using c_4 = c_<4>;
+
+using c_5 = c_<5>;
+
+using c_6 = c_<6>;
+
+using c_7 = c_<7>;
+
+using c_8 = c_<8>;
+
+using c_9 = c_<9>;
+
+template <auto N>
+using bool_ = std::bool_constant<N>;
+
+template <size_t N>
+using index_t = c_<N, size_t>;
+
+template <size_t N>
+constexpr index_t<N> index = {};
+
+template <auto v>
+using constant_t = c_<v, std::decay_t<decltype(v)>>;
+
+template <auto v>
+constexpr constant_t<v> constant = {};
+
+template <typename... Args>
+using tuple_t = std::tuple<Args...>;
+
+template <auto... N>
+using is = std::index_sequence<N...>;
+
+template <typename T>
+inline constexpr auto typev = T::value;
+
+template <typename T>
+using value_t = typename T::value_type;
+
+template <typename T>
+inline constexpr auto negav = std::negation_v<T>;
+
+template <typename T, typename = std::void_t<>>
+struct typeof {
+  using type = T;
+  static constexpr auto value = 0;
+};
+
+template <typename T>
+struct typeof<T, std::void_t<typename T::type>> {
+  using type = typename T::type;
+  static constexpr auto value = 1;
+};
+
+template <typename T>
+using typeof_t = typename typeof<T>::type;
+
+template <typename T>
+inline constexpr auto typeof_v = typev<typeof_t<T>>;
+
+template <bool B, typename T, typename U>
+using type_if = typeof_t<std::conditional_t<B, T, U>>;
+
+template <bool B, typename T, typename U>
+inline constexpr auto type_if_v = typev<type_if<B, T, U>>;
+
+template <bool B, typename T, typename U>
+inline constexpr auto value_if = typev<std::conditional_t<B, T, U>>;
+
+template <typename T, typename U, typename V>
+using conditional_of = std::conditional_t<typev<T>, U, V>;
+
+template <typename T, typename = std::void_t<>>
+struct has_type : std::false_type {};
+
+template <typename T>
+struct has_type<T, std::void_t<typename T::type>> : std::true_type {};
+
+template <typename T>
+inline constexpr auto has_type_v = typev<has_type<T>>;
+
+template <typename T, typename = std::void_t<>>
+struct has_value_type : std::false_type {
+  using value_type = int;
+};
+
+template <typename T>
+struct has_value_type<T, std::void_t<value_t<T>>> : std::true_type {
+  using value_type = value_t<T>;
+};
+
+template <typename T>
+using has_value_type_t = value_t<has_value_type<T>>;
+
+template <typename T>
+inline constexpr auto has_value_type_v = typev<has_value_type<T>>;
+
+template <typename T, typename = std::void_t<>>
+struct has_new : std::false_type {};
+
+template <typename T>
+struct has_new<T, std::void_t<decltype(T::operator new(0))>> : std::true_type {
+};
+
+template <typename T>
+inline constexpr auto has_new_v = typev<has_new<T>>;
+
+template <typename T, typename = std::void_t<>>
+struct has_delete : std::false_type {};
+
+template <typename T>
+struct has_delete<T, std::void_t<decltype(T::operator delete(nullptr))>>
+    : std::true_type {};
+
+template <typename T>
+inline constexpr auto has_delete_v = typev<has_delete<T>>;
+
+template <typename T, typename = std::void_t<>>
+struct is_type_complete : std::false_type {};
+
+template <typename T>
+struct is_type_complete<T, std::void_t<decltype(sizeof(T))>> : std::true_type {
+};
+
+template <typename T>
+inline constexpr auto is_type_complete_v = typev<is_type_complete<T>>;
+
+template <template <typename...> typename B, typename T,
+          typename = std::void_t<>>
+struct is_base_template_of : std::false_type {};
+
+template <template <typename...> typename B, typename T>
+struct is_base_template_of<
+    B, T, std::void_t<decltype([]<typename... Args>(B<Args...> *) {
+    }(std::declval<T *>()))>> : std::true_type {};
+
+template <template <typename...> typename B, typename T>
+inline constexpr auto is_base_template_of_v = typev<is_base_template_of<B, T>>;
+
+template <typename T>
+constexpr bool is_template() {
+  return false;
+}
+
+template <template <auto...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <template <typename...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <template <typename, auto...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <template <template <auto...> typename...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <template <template <typename...> typename...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <template <template <typename, auto...> typename...> typename T>
+constexpr bool is_template() {
+  return true;
+}
+
+template <typename T, typename U>
+struct pair_t {
+  using first = T;
+  using second = U;
+};
+
+template <typename T>
+using first_t = typename T::first;
+
+template <typename T>
+using second_t = typename T::second;
+
+template <int p, int q>
+struct pair_v {
+  static constexpr auto first = p;
+  static constexpr auto second = q;
+};
+
+template <typename T>
+inline constexpr auto first_v = T::first;
+
+template <typename T>
+inline constexpr auto second_v = T::second;
+
+template <typename T>
+inline constexpr auto pair_diff = second_v<T> - first_v<T>;
+
+template <auto p, auto q, typename T>
+struct triple : std::type_identity<T> {
+  static constexpr auto first = p;
+  static constexpr auto second = q;
+};
+
+template <int N, typename T>
+struct identity {
+  using type = T;
+};
+
+template <int N, typename T>
+using identity_t = typeof_t<identity<N, T>>;
+
+template <auto N, typename T>
+constexpr decltype(auto) ignore(T &&t) {
+  return std::forward<T>(t);
+}
+
+template <auto N, typename T>
+struct wrapper : wrapper<N - 1, std::type_identity<T>> {};
+
+template <typename T>
+struct wrapper<0, T> : std::type_identity<T> {};
+
+template <auto N, typename T>
+using wrapper_t = typeof_t<wrapper<N, T>>;
+
+template <auto N, typename T>
+struct index_type : std::type_identity<T> {
+  static constexpr auto value = N;
+};
+
+template <auto N, typename T>
+using index_upper = wrapper_t<1, index_type<N, T>>;
+
+template <typename T, typename...>
+struct alias {
+  using type = T;
+};
+
+template <typename... Args>
+using alias_t = typeof_t<alias<Args...>>;
+
+template <template <typename...> typename F, typename... Args>
+struct wrapin {
+  using type = tuple_t<F<Args>...>;
+};
+
+template <template <typename...> typename F, typename... Args>
+using wrapin_t = typeof_t<wrapin<F, Args...>>;
+
+template <bool B, template <typename...> typename F, typename T>
+using wrapin_if = std::conditional_t<B, F<T>, T>;
+
+template <typename... Args>
+struct contains : std::false_type {};
+
+template <typename T, typename... Args>
+struct contains<T, Args...> : bool_<(std::is_same_v<T, Args> || ...)> {};
+
+template <typename...>
+inline constexpr auto contains_v = std::false_type{};
+
+template <typename T, typename... Args>
+inline constexpr auto contains_v<T, Args...> = (std::is_same_v<T, Args> || ...);
+
+template <auto... values>
+struct comprise : std::false_type {};
+
+template <auto value, auto... values>
+struct comprise<value, values...> : bool_<((value == values) || ...)> {};
+
+template <auto...>
+inline constexpr auto comprise_v = std::false_type{};
+
+template <auto value, auto... values>
+inline constexpr auto comprise_v<value, values...> = ((value == values) || ...);
+
+template <typename B, typename...>
+struct exists_type : B {};
+
+template <typename B, typename T, typename... Args>
+struct exists_type<B, T, Args...>
+    : std::conditional_t<contains_v<T, Args...>, std::negation<B>,
+                         exists_type<B, Args...>> {};
+
+template <typename B, typename... Args>
+using exists_type_t = typeof_t<exists_type<B, Args...>>;
+
+template <typename B, typename... Args>
+inline constexpr auto exists_type_v = typev<exists_type_t<B, Args...>>;
+
+template <typename... Args>
+using is_unique_type = exists_type<std::true_type, Args...>;
+
+template <typename...>
+inline constexpr auto is_unique_type_v = std::true_type{};
+
+template <typename T, typename... Args>
+inline constexpr auto is_unique_type_v<T, Args...> =
+    !contains_v<T, Args...> && is_unique_type_v<Args...>;
+
+template <typename... Args>
+using has_duplicates_type = exists_type<std::false_type, Args...>;
+
+template <typename...>
+inline constexpr auto has_duplicates_type_v = std::false_type{};
+
+template <typename T, typename... Args>
+inline constexpr auto has_duplicates_type_v<T, Args...> =
+    contains_v<T, Args...> || has_duplicates_type_v<Args...>;
+
+template <typename B, auto...>
+struct exists_value : B {};
+
+template <typename B, auto value, auto... values>
+struct exists_value<B, value, values...>
+    : std::conditional_t<comprise_v<value, values...>, std::negation<B>,
+                         exists_value<B, values...>> {};
+
+template <typename B, auto... values>
+using exists_value_t = typeof_t<exists_value<B, values...>>;
+
+template <typename B, auto... values>
+inline constexpr auto exists_value_v = typev<exists_value_t<B, values...>>;
+
+template <auto... values>
+using is_unique_value = exists_value<std::true_type, values...>;
+
+template <auto...>
+inline constexpr auto is_unique_value_v = std::true_type{};
+
+template <auto value, auto... values>
+inline constexpr auto is_unique_value_v<value, values...> =
+    negav<comprise<value, values...>> && is_unique_value_v<values...>;
+
+template <auto... values>
+using has_duplicates_value = exists_value<std::false_type, values...>;
+
+template <auto...>
+inline constexpr auto has_duplicates_value_v = std::false_type{};
+
+template <auto value, auto... values>
+inline constexpr auto has_duplicates_value_v<value, values...> =
+    typev<comprise<value, values...>> || has_duplicates_value_v<values...>;
+
+template <bool B, typename T>
+struct exists;
+
+template <template <typename...> typename T, typename... Args>
+struct exists<true, T<Args...>> {
+  using type = is_unique_type<Args...>;
+};
+
+template <template <typename, auto...> typename T, typename U, auto... values>
+struct exists<true, T<U, values...>> {
+  using type = is_unique_value<values...>;
+};
+
+template <template <typename...> typename T, typename... Args>
+struct exists<false, T<Args...>> {
+  using type = has_duplicates_type<Args...>;
+};
+
+template <template <typename, auto...> typename T, typename U, auto... values>
+struct exists<false, T<U, values...>> {
+  using type = has_duplicates_value<values...>;
+};
+
+template <bool B, typename T>
+using exists_t = typeof_t<exists<B, T>>;
+
+template <bool B, typename T>
+inline constexpr auto exists_v = typev<exists_t<B, T>>;
+
+template <typename T>
+using is_unique = exists<true, T>;
+
+template <typename T>
+using is_unique_t = typeof_t<is_unique<T>>;
+
+template <typename T>
+inline constexpr auto is_unique_v = typev<is_unique_t<T>>;
+
+template <typename T>
+using has_duplicates = exists<false, T>;
+
+template <typename T>
+using has_duplicates_t = typeof_t<has_duplicates<T>>;
+
+template <typename T>
+inline constexpr auto has_duplicates_v = typev<has_duplicates_t<T>>;
+
+template <bool A, bool B, typename X, typename Y, typename Z>
+using ternary_conditional = std::conditional<A, std::conditional_t<B, X, Y>, Z>;
+
+template <bool A, bool B, typename X, typename Y, typename Z>
+using ternary_conditional_t = typeof_t<ternary_conditional<A, B, X, Y, Z>>;
+
+template <typename... Args>
+struct inherit : Args... {};
+
+template <typename T, typename U = std::void_t<>>
+struct is_inheritable : std::false_type {};
+
+template <typename T>
+struct is_inheritable<T, std::void_t<inherit<T>>> : std::true_type {};
+
+template <typename T>
+inline constexpr auto is_inheritable_v = typev<is_inheritable<T>>;
+
+template <typename... Args>
+struct is_inheritable_pack : bool_<(is_inheritable_v<Args> && ...)> {};
+
+template <typename... Args>
+inline constexpr auto is_inheritable_pack_v =
+    typev<is_inheritable_pack<Args...>>;
+
+template <typename T>
+struct is_instantiable : std::negation<std::is_abstract<T>> {};
+
+template <typename T>
+inline constexpr auto is_instantiable_v = typev<is_instantiable<T>>;
+
+
 /**
  * @brief Identity type that holds the given type T
  * @tparam T The type to hold
@@ -1086,4 +1530,165 @@ constexpr bool is_specialization_v<_Template<_Types...>, _Template> = true;
 template <class _Type, template <class...> class _Template>
 struct is_specialization
     : bool_constant<is_specialization_v<_Type, _Template>> {};
+
+
+template <typename S, typename T, typename = std::void_t<>>
+struct is_streamable : std::false_type {};
+
+template <typename S, typename T>
+struct is_streamable<
+    S, T,
+    std::void_t<disable_if_t<std::is_same_v<S, T>>,
+                decltype(std::declval<std::add_lvalue_reference_t<S>>()
+                         << std::declval<T>())>> : std::true_type {};
+
+template <typename S, typename T>
+using is_streamable_t = typeof_t<is_streamable<S, T>>;
+
+template <typename S, typename T>
+inline constexpr auto is_streamable_v = typev<is_streamable_t<S, T>>;
+
+template <typename T, typename = std::void_t<>>
+struct is_iterable : std::false_type {};
+
+template <typename T>
+struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())),
+                                  decltype(std::end(std::declval<T>()))>>
+    : std::true_type {};
+
+template <typename T>
+inline constexpr auto is_iterable_v = typev<is_iterable<T>>;
+
+template <typename T, typename = std::void_t<>>
+struct is_container : std::false_type {};
+
+template <typename T>
+struct is_container<
+    T,
+    std::void_t<typename T::value_type, typename T::size_type,
+                typename T::allocator_type, typename T::iterator,
+                typename T::const_iterator, decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end()),
+                decltype(std::declval<T>().cbegin()),
+                decltype(std::declval<T>().cend())>> : std::true_type {};
+
+template <typename T>
+inline constexpr auto is_container_v = typev<is_container<T>>;
+
+template <typename T, typename U>
+struct is_pointer_of : std::is_same<T, std::add_pointer_t<U>> {};
+
+template <typename T, typename U>
+inline constexpr auto is_pointer_of_v = typev<is_pointer_of<T, U>>;
+
+template <template <typename...> typename T, typename Args>
+struct is_instance_of : std::false_type {};
+
+template <template <typename...> typename T, typename... Args>
+struct is_instance_of<T, T<Args...>> : std::true_type {};
+
+template <template <typename...> typename T, typename Args>
+inline constexpr auto is_instance_of_v = typev<is_instance_of<T, Args>>;
+
+template <template <typename, auto...> typename T, typename Args>
+struct is_sequence_of : std::false_type {};
+
+template <template <typename, auto...> typename T, typename U, auto... values>
+struct is_sequence_of<T, T<U, values...>> : std::true_type {};
+
+template <template <typename, auto...> typename T, typename Args>
+inline constexpr auto is_sequence_of_v = typev<is_sequence_of<T, Args>>;
+
+template <typename T>
+struct is_tuple : is_instance_of<std::tuple, T> {};
+
+template <typename T>
+inline constexpr auto is_tuple_v = typev<is_tuple<T>>;
+
+template <typename T>
+struct is_sequence : is_sequence_of<std::integer_sequence, T> {};
+
+template <typename T>
+inline constexpr auto is_sequence_v = typev<is_sequence<T>>;
+
+template <typename T>
+struct is_variadic_type : std::false_type {};
+
+template <template <typename...> typename T, typename... Args>
+struct is_variadic_type<T<Args...>> : std::true_type {};
+
+template <typename T>
+using is_variadic_type_t = typeof_t<is_variadic_type<T>>;
+
+template <typename T>
+inline constexpr auto is_variadic_type_v = typev<is_variadic_type_t<T>>;
+
+template <typename T>
+struct is_variadic_value : std::false_type {};
+
+template <template <auto...> typename T, auto... Args>
+struct is_variadic_value<T<Args...>> : std::true_type {};
+
+template <template <typename, auto...> typename T, typename U, auto... Args>
+struct is_variadic_value<T<U, Args...>> : std::true_type {};
+
+template <typename T>
+using is_variadic_value_t = typeof_t<is_variadic_value<T>>;
+
+template <typename T>
+inline constexpr auto is_variadic_value_v = typev<is_variadic_value_t<T>>;
+
+template <typename T>
+struct is_variadic : bool_<is_variadic_type_v<T> || is_variadic_value_v<T>> {};
+
+template <typename T>
+using is_variadic_t = typeof_t<is_variadic<T>>;
+
+template <typename T>
+inline constexpr auto is_variadic_v = typev<is_variadic_t<T>>;
+
+template <typename... Args>
+struct is_variadic_type_pack : bool_<(is_variadic_type_v<Args> && ...)> {};
+
+template <typename... Args>
+using is_variadic_type_pack_t = typeof_t<is_variadic_type_pack<Args...>>;
+
+template <typename... Args>
+inline constexpr auto is_variadic_type_pack_v =
+    typev<is_variadic_type_pack_t<Args...>>;
+
+template <typename... Args>
+struct is_variadic_value_pack : bool_<(is_variadic_value_v<Args> && ...)> {};
+
+template <typename... Args>
+using is_variadic_value_pack_t = typeof_t<is_variadic_value_pack<Args...>>;
+
+template <typename... Args>
+inline constexpr auto is_variadic_value_pack_v =
+    typev<is_variadic_value_pack_t<Args...>>;
+
+template <typename... Args>
+struct is_variadic_pack : bool_<is_variadic_type_pack_v<Args...> ||
+                                is_variadic_value_pack_v<Args...>> {};
+
+template <typename... Args>
+using is_variadic_pack_t = typeof_t<is_variadic_pack<Args...>>;
+
+template <typename... Args>
+inline constexpr auto is_variadic_pack_v = typev<is_variadic_pack_t<Args...>>;
+
+template <typename... Args>
+concept is_function_pack = requires(Args... args) {
+  []<typename... R, typename... T>(R (*...f)(T...)) {}(args...);
+};
+
+template <typename T>
+struct is_group : std::false_type {};
+
+template <template <typename...> typename T, typename... Args>
+struct is_group<T<Args...>> : is_variadic_pack<Args...> {};
+
+template <typename T>
+inline constexpr auto is_group_v = typev<is_group<T>>;
 }  // namespace core::meta::type_traits

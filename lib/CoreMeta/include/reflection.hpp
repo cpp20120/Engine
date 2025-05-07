@@ -382,8 +382,8 @@ struct Caster<std::index_sequence<Is...>, Ts...> : IndexedType<Is, Ts>... {};
  */
 template <std::size_t I, typename... Ts>
 constexpr auto Get(TypeList<Ts...>)
-    -> decltype([]<typename T>(Impl::IndexedType<I, T>&&) -> T {
-    }(Impl::Caster<std::index_sequence_for<Ts...>, Ts...>{}));
+    -> decltype([]<typename T>(IndexedType<I, T>&&) -> T {
+    }(Caster<std::index_sequence_for<Ts...>, Ts...>{}));
 
 /**
  * @brief Helper for compile-time value injection
@@ -1104,7 +1104,10 @@ T CreateInstance() {
   auto desc = GetDescription(Tag<T>{});
   return T{desc.template Get<0>().Create(), desc.template Get<1>().Create()};
 };
-
+/**
+ * @brief storage for description of types
+ * @tparam T Value type
+ */
 template <typename T>
 struct TypeDescription;
 
@@ -1123,10 +1126,17 @@ struct has_reflect : std::false_type {};
 
 template <typename T>
 struct has_reflect<T, std::void_t<decltype(T::reflect())>> : std::true_type {};
-
+/**
+ * @brief Concept checking if a type is reflectable
+ * @tparam T Type to check
+ */
 template <typename T>
 concept Reflectable = has_reflect<T>::value;
-
+/**
+ * @brief Computes FNV-1a hash of a string at compile time
+ * @param str The string to hash
+ * @return 32-bit hash value
+ */
 constexpr uint32_t fnv1a_hash(const char* str) {
   constexpr uint32_t fnv1a_prime = 16777619u;
   constexpr uint32_t fnv1a_offset_basis = 2166136261u;
@@ -1138,17 +1148,30 @@ constexpr uint32_t fnv1a_hash(const char* str) {
   }
   return hash;
 }
-
+/**
+ * @brief Structure holding field hash information
+ * @tparam T The containing type
+ */
 template <typename T>
 struct FieldHash {
-  const char* name;
-  uint32_t hash;
-  size_t offset;
+  const char* name;  ///< Field name
+  uint32_t hash;     ///< Precomputed hash of field name
+  size_t offset;     ///< Field offset in bytes
 
+  /**
+   * @brief Constructs a FieldHash
+   * @param name Field name
+   * @param offset Field offset
+   */
   constexpr FieldHash(const char* name, size_t offset)
-      : name(name), hash(fnv1a_hash(name)), offset(offset) {};
+      : name(name), hash(fnv1a_hash(name)), offset(offset) {}
 };
 
+/**
+ * @brief Gets all fields of a type as an array of FieldHash
+ * @tparam T The type to inspect
+ * @return Array of FieldHash for all fields
+ */
 template <typename T>
 constexpr auto get_fields() {
   return std::array{
@@ -1158,6 +1181,13 @@ constexpr auto get_fields() {
   };
 }
 
+/**
+ * @brief Gets a field by name using hash comparison
+ * @tparam T The containing type
+ * @param name Field name to find
+ * @return FieldHash for the requested field
+ * @throws std::runtime_error if field not found
+ */
 template <typename T>
 constexpr FieldHash<T> get_field_by_name(const char* name) {
   uint32_t hash = fnv1a_hash(name);
@@ -1169,6 +1199,12 @@ constexpr FieldHash<T> get_field_by_name(const char* name) {
   throw std::runtime_error("Field not found");
 }
 
+/**
+ * @brief Gets all fields from base and derived classes
+ * @tparam Base Base class type
+ * @tparam Derived Derived class type
+ * @return Combined array of fields from both classes
+ */
 template <typename Base, typename Derived>
 constexpr auto get_all_fields() {
   auto base_fields = get_fields<Base>();
@@ -1180,15 +1216,25 @@ constexpr auto get_all_fields() {
 
   return merged_fields;
 }
-
+/**
+ * @brief Checks if a std::any object contains a specific type
+ * @tparam T Type to check for
+ * @param obj std::any object to check
+ * @return true if object contains type T
+ */
 template <typename T>
 bool IsType(const std::any& obj) {
   return obj.type() == typeid(T);
 }
-
+/**
+ * @brief Alias for a variant of unique types
+ * @tparam Ts Types to include in variant
+ */
 template <typename... Ts>
 using UniqueTypes = std::variant<std::decay_t<Ts>...>;
-
+/**
+ * @brief Type alias for field value variant
+ */
 using FieldValue = decltype([] {
   using VariantType = typename UniqueTypes<
       std::decay_t<decltype(std::declval<MyClass>().intField)>,
@@ -1198,11 +1244,19 @@ using FieldValue = decltype([] {
   return VariantType{};
 })();
 
+/**
+ * @brief Container for field name-value pairs
+ */
 struct FieldValueContainer {
-  std::string_view name;
-  FieldValue value;
+  std::string_view name;  ///< Field name
+  FieldValue value;       ///< Field value
 };
 
+/**
+ * @brief Gets all fields of a type as an array of FieldInfo
+ * @tparam T The type to inspect
+ * @return Array of FieldInfo for all fields
+ */
 template <typename T>
 constexpr auto GetFields() {
   return std::array{REGISTER_FIELD(T, intField), REGISTER_FIELD(T, doubleField),
@@ -1210,6 +1264,12 @@ constexpr auto GetFields() {
                     REGISTER_FIELD(T, boolField)};
 }
 
+/**
+ * @brief Gets all field values from an object
+ * @tparam T The object type
+ * @param obj Object to inspect
+ * @return Vector of FieldValueContainer with name-value pairs
+ */
 template <typename T>
 std::vector<FieldValueContainer> GetFieldValues(const T& obj) {
   std::vector<FieldValueContainer> result;
@@ -1221,12 +1281,32 @@ std::vector<FieldValueContainer> GetFieldValues(const T& obj) {
 
   return result;
 }
-
+/**
+ * @brief Field descriptor with attributes
+ * @tparam T Field type
+ * @tparam Attributes Attribute types
+ */
 template <typename T, typename... Attributes>
 struct Field : public Attributes... {
-  using Type = T;
+  using Type = T;  ///< Field type
+
+  /**
+   * @brief Constructs a Field descriptor
+   * @param name Field name
+   */
   constexpr Field(std::string_view name) : Name(name) {}
-  std::string_view Name;
+
+  std::string_view Name;  ///< Field name
+};
+/**
+ * @brief Field information structure for reflection
+ * @tparam Struct The containing struct type
+ * @tparam FieldType The type of the field
+ */
+template <typename Struct, typename FiledType>
+struct FieldInfo {
+  std::string_view name;
+  FieldInfo Struct::* ptr;
 };
 
 template <typename Cls, typename Parent, typename... Fields>
@@ -1274,50 +1354,87 @@ struct Description : protected Fields... {
     });
   }
 };
-
+/**
+ * @brief Checks if a type is an instantiation of a template
+ * @tparam T Type to check
+ * @tparam Template Template to check against
+ */
 template <typename T, template <typename...> class Template>
 struct is_instantiation_of : std::false_type {};
-
+/**
+ * @brief Specialization for template instantiation check
+ */
 template <template <typename...> class Template, typename... Args>
 struct is_instantiation_of<Template<Args...>, Template> : std::true_type {};
-
+/**
+ * @brief Helper variable template for instantiation check
+ */
 template <typename T, template <typename...> class Template>
 inline constexpr bool is_instantiation_of_v =
     is_instantiation_of<T, Template>::value;
-
+/**
+ * @brief Checks if a type is an instantiation of a mixed template
+ * @tparam T Type to check
+ * @tparam Template Template to check against
+ */
 template <typename T, template <typename..., auto...> class Template>
 struct is_instantiation_of_mixed : std::false_type {};
-
+/**
+ * @brief Specialization for mixed template instantiation check
+ */
 template <template <typename...> class Template, typename... Types,
           auto... Values>
 struct is_instantiation_of_mixed<Template<Types..., Values...>, Template>
     : std::true_type {};
-
+/**
+ * @brief Helper variable template for mixed instantiation check
+ */
 template <typename T, template <typename..., auto...> class Template>
 inline constexpr bool is_instantiation_of_mixed_v =
     is_instantiation_of_mixed<T, Template>::value;
+/**
+ * @brief Extracts template parameters from a mixed template
+ * @tparam T The instantiated type
+ * @tparam Template The template pattern
+ */
 
 template <typename T, template <typename..., auto...> class Template>
 struct ExtractTemplateParameters;
-
+/**
+ * @brief Specialization for parameter extraction
+ */
 template <template <typename...> class Template, typename... Types,
           auto... Values>
 struct ExtractTemplateParameters<Template<Types..., Values...>, Template> {
   using type =
       std::tuple<Types..., std::integral_constant<decltype(Values), Values>...>;
 };
-
+/**
+ * @brief Helper type alias for extracted template parameters
+ */
 template <typename T, template <typename..., auto...> class Template>
 using ExtractTemplateParameters_t =
     typename ExtractTemplateParameters<T, Template>::type;
 
-// GetTemplateParameters для смешанных шаблонов
+/**
+ * @brief Gets template parameters for a mixed template type
+ * @tparam T The instantiated type
+ * @tparam Template The template pattern
+ * @return Tuple containing type parameters and value parameters as integral
+ * constants
+ */
 template <typename T, template <typename..., auto...> class Template>
 constexpr auto GetTemplateParameters() {
   static_assert(is_instantiation_of_mixed_v<T, Template>,
                 "T должен быть специализацией указанного смешанного шаблона");
   return ExtractTemplateParameters_t<T, Template>{};
 }
+
+/**
+ * @brief Helper for registering fields in reflection system
+ * @param Struct The struct type containing the field
+ * @param Field The field name to register
+ */
 #define REGISTER_FIELD(Struct, Field) \
   FieldInfo<Struct, decltype(Struct::Field)> { #Field, &Struct::Field }
 /**
@@ -1380,7 +1497,11 @@ constexpr auto GetTemplateParameters() {
   inline constexpr auto GetAttrs(::utils::Reflection::Tag<cls>) { \
     return ::utils::Reflection::Attrs<__VA_ARGS__>{};             \
   }
-
+/**
+ * @brief Gets attributes for a type
+ * @param cls The class name to get attributes for
+ * @param ... Comma-separated list of attribute types
+ */
 #define DESCRIBE_GET(cls, ...)                                    \
   inline constexpr auto GetAttrs(::utils::Reflection::Tag<cls>) { \
     return ::utils::Reflection::Attrs<__VA_ARGS__>{};             \
