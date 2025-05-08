@@ -1,6 +1,6 @@
 ## Engine
 
-Currently at arch stage and come implementations(can be changed)
+Currently at arch stage and core implementations(can be changed)
 
 
 ### Build Debug
