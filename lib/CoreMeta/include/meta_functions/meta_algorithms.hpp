@@ -542,9 +542,9 @@ struct merge_advance {
 
     static constexpr auto value =
         core::meta::type_traits::typev<comparator<lhs, rhs>>;
-    using type =
-        core::meta::type_traits::typeof_t<impl<i + value, j, p + !value, q, m - 1,
-                      append_t<V, std::conditional_t<value, lhs, rhs>>>>;
+    using type = core::meta::type_traits::typeof_t<
+        impl<i + value, j, p + !value, q, m - 1,
+             append_t<V, std::conditional_t<value, lhs, rhs>>>>;
   };
 
   template <int i, int j, int p, int q, typename V>
@@ -562,8 +562,10 @@ struct merge_advance {
 
 /// Helper alias for merge_advance
 template <int N, typename T, typename U,
-          template <typename, typename> typename comparator = core::meta::meta_funcs::less_t>
-using merge_advance_t = core::meta::type_traits::typeof_t<merge_advance<N, T, U, comparator>>;
+          template <typename, typename> typename comparator =
+              core::meta::meta_funcs::less_t>
+using merge_advance_t =
+    core::meta::type_traits::typeof_t<merge_advance<N, T, U, comparator>>;
 
 /**
  * @brief Merge helper with custom combination logic
@@ -594,7 +596,9 @@ struct merge_combine {
     static constexpr auto B2 = value < 0;
     static constexpr auto B3 = value > 0;
 
-    using next = core::meta::type_traits::ternary_conditional_t<!B1, B2, lhs, rhs, C<lhs, rhs>>;
+    using next =
+        core::meta::type_traits::ternary_conditional_t<!B1, B2, lhs, rhs,
+                                                       C<lhs, rhs>>;
     using type = core::meta::type_traits::typeof_t<
         impl<i + B1 + B2, j, p + B1 + B3, q,
              append_t<V, core::meta::type_traits::typeof_t<next>>>>;
@@ -606,7 +610,10 @@ struct merge_combine {
   template <int i, int j, int q, typename V>
   struct impl<i, j, q, q, V> : concat<V, range_t<i, j, T>> {};
 
-  using type = core::meta::type_traits::typeof_t<impl<0, core::meta::meta_funcs::sizeof_t_v<T>, 0, core::meta::meta_funcs::sizeof_t_v<U>, core::meta::meta_funcs::clear_t<T>>>;
+  using type = core::meta::type_traits::typeof_t<
+      impl<0, core::meta::meta_funcs::sizeof_t_v<T>, 0,
+           core::meta::meta_funcs::sizeof_t_v<U>,
+           core::meta::meta_funcs::clear_t<T>>>;
 };
 
 /// Helper alias for merge_combine

@@ -30,7 +30,7 @@ struct is_variadic_type : std::false_type {};
 template <template <typename...> typename T, typename... Args>
 struct is_variadic_type<T<Args...>> : std::true_type {};
 
- /**
+/**
  * @brief Shorthand boolean constant for is_variadic_type.
  */
 template <typename T>
@@ -50,8 +50,6 @@ struct index_type {
   using type = T;                   ///< The wrapped type.
   static constexpr auto index = N;  ///< The index value.
 };
-
-
 
 /**
  * @brief Disable a type if condition is true (negation of std::enable_if).
@@ -216,8 +214,6 @@ struct clear_if : std::conditional_t<B, clear<T>, std::type_identity<T>> {};
 
 template <bool B, typename T>
 using clear_if_t = typename clear_if<B, T>::type;
-
-
 
 /**
  * @brief Curries a function: partial application of arguments until invocable.

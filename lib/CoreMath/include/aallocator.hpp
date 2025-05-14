@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <malloc.h>
 #ifdef NOT WIN32

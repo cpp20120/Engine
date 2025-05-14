@@ -264,7 +264,6 @@ constexpr auto GetTemplateArgs(T<Args...>) {
   return TypeList<Args...>{};
 }
 
-
 /**
  * @brief Wrapper for compile-time values
  * @tparam I The wrapped value
@@ -965,7 +964,7 @@ struct Description : protected Fields... {
     return IndexOf<F>(Field<F>{});
   }
 
- /**
+  /**
    * @brief Get the index of a field by its name
    * @param name The name of the field to find
    * @return Index of the field if found, NPos otherwise

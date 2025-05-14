@@ -40,19 +40,17 @@ auto test_scale = core::math::matrix::transform::scale2d(2.0f, 3.0f);
 auto transform2D = translate * rotate * test_scale;
 
 auto translate3D = core::math::matrix::transform::translate3d(1.0f, 2.0f, 3.0f);
-auto rotateX =
-    core::math::matrix::transform::rotate3d_x(3.14159f / 6);  
+auto rotateX = core::math::matrix::transform::rotate3d_x(3.14159f / 6);
 auto perspective = core::math::matrix::mat4x4::identity();
 
 auto [L, U, P] = core::math::matrix::lu_decomposition(matA);
 
 auto [Q, R] = core::math::matrix::qr_decomposition(matA);
 
-auto submatrix = matA.slice<1, 3, 0, 2>(); 
+auto submatrix = matA.slice<1, 3, 0, 2>();
 
-
-auto row = core::math::matrix::get_row(matA, 1);    
-auto col = core::math::matrix::get_column(matA, 2); 
+auto row = core::math::matrix::get_row(matA, 1);
+auto col = core::math::matrix::get_column(matA, 2);
 
 // Матрица поворота на 90 градусов
 auto rot90 = core::math::matrix::transform::rotate2d(3.14159f / 2);

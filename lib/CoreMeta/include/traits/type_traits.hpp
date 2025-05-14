@@ -2218,7 +2218,7 @@ struct is_tuple : is_instance_of<std::tuple, T> {};
 
 /// Helper variable template for is_tuple::value
 template <typename T>
-inline  auto is_tuple_v = typev<is_tuple<T>>;
+inline auto is_tuple_v = typev<is_tuple<T>>;
 
 /**
  * @brief Checks if type T is a sequence (integer_sequence or similar)

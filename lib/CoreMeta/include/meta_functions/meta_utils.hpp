@@ -10177,8 +10177,6 @@ struct binomial_coeff {
 template <int p, int q>
 inline constexpr auto binomial_coeff_v = typev<binomial_coeff<p, q>>;
 
-
-
 template <auto N, typename T>
 struct sort_row : quick_sort<get_matrix_row_t<N, T>> {};
 

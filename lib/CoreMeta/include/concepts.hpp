@@ -19,7 +19,6 @@
 #include "./concepts/map_container_concepts.hpp"
 #include "./concepts/optional_concepts.hpp"
 #include "./concepts/utility_concepts.hpp"
-
 #include "./traits/type_traits.hpp"
 
 namespace core::meta::concepts {
@@ -38,6 +37,5 @@ template <typename T>
 concept smart_pointer = requires(T t) {
   { t.get() } -> std::same_as<typename T::element_type*>;
 };
-
 
 }  // namespace core::meta::concepts

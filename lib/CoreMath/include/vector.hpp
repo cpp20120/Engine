@@ -5,7 +5,6 @@
 #include "./concepts.hpp"
 #include "./parallel/parallel_executor.hpp"
 
-
 namespace core::math::vector {
 /**
  * @defgroup Vector Math Vector

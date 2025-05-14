@@ -20,8 +20,8 @@
 #include <utility>
 #include <vector>
 
-#include "./vector.hpp"
 #include "./aallocator.hpp"
+#include "./vector.hpp"
 
 /**
  * @namespace core::math::parallel
@@ -91,8 +91,6 @@ void parallel_invoke(std::vector<Function>&& functions) {
 
 }  // namespace core::math::parallel
 
-
-
 /**
  * @defgroup core_math_matrix Core Math Matrix
  * @brief Core Matrix library implementation
@@ -116,7 +114,7 @@ concept ArithmeticValue = requires(T a, T b) {
   requires std::is_arithmetic_v<T>;
   { a + b } -> std::same_as<T>;
   { a - b } -> std::same_as<T>;
-  { a* b } -> std::same_as<T>;
+  { a * b } -> std::same_as<T>;
   { a / b } -> std::same_as<T>;
   { -a } -> std::same_as<T>;
 };
@@ -132,9 +130,9 @@ class Matrix {
  private:
   // Use std::array for small matrices, std::vector with aligned allocator for
   // large ones
-  using StorageType =
-      std::conditional_t<(Rows * Cols <= 16), std::array<T, Rows * Cols>,
-                         std::vector<T, core::math::alloc::AlignedAllocator<T>>>;
+  using StorageType = std::conditional_t<
+      (Rows * Cols <= 16), std::array<T, Rows * Cols>,
+      std::vector<T, core::math::alloc::AlignedAllocator<T>>>;
   StorageType data_;
 
  public:
@@ -1397,10 +1395,10 @@ class SparseMatrix {
  private:
   std::vector<T, core::math::alloc::AlignedAllocator<T>>
       values_;                       // Non-zero values
-  std::vector<size_t> col_indices_;             // Column indices of non-zeros
-  std::vector<size_t> row_ptr_;  // Start of each row (size: rows_ + 1)
-  size_t rows_, cols_;           // Matrix dimensions
-  size_t nnz_;                   // Number of non-zero elements
+  std::vector<size_t> col_indices_;  // Column indices of non-zeros
+  std::vector<size_t> row_ptr_;      // Start of each row (size: rows_ + 1)
+  size_t rows_, cols_;               // Matrix dimensions
+  size_t nnz_;                       // Number of non-zero elements
 
  public:
   /**

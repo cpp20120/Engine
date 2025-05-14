@@ -110,9 +110,9 @@ concept associative_container =
                    requires(typename C::value_type&& tmp_value,
                             typename C::const_iterator const& hint) {
                      Insertable<C, typename C::const_iterator,
-                                typename C::value_type&&>;
+                                typename C::value_type &&>;
                      Emplaceable<C, typename C::const_iterator,
-                                 typename C::value_type&&>;
+                                 typename C::value_type &&>;
                    };
 
       Erasable<C, typename C::const_iterator, typename C::key_type>;
