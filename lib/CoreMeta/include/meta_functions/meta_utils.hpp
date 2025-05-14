@@ -5,6 +5,8 @@
 #include <utility>
 #include <variant>
 
+#include "../traits/type_traits.hpp"
+
 namespace core::meta {
 
 template <auto value, decltype(value)... values>
@@ -99,7 +101,7 @@ template <template <typename, auto...> typename L,
 struct rename<L<T, t...>, R<U, u...>> : std::type_identity<R<U, t...>> {};
 
 template <typename L, typename R>
-using rename_t = typeof_t<rename<L, R>>;
+using rename_t = core::meta::traits::typeof_t<rename<L, R>>;
 
 template <bool B, typename L, typename R>
 using rename_if = std::conditional_t<B, rename<L, R>, std::type_identity<L>>;
