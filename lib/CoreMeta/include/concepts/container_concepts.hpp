@@ -1,10 +1,19 @@
 #pragma once
 
-#include "iterator_concepts.hpp"
 #include "basic_concepts.hpp"
+#include "iterator_concepts.hpp"
 
+/**
+ * @namespace core::meta::concepts
+ * @brief Namespace for meta-programming concepts and utilities.
+ */
 namespace core::meta::concepts {
 
+/**
+ * @concept container
+ * @brief Concept to check if a type C is a container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept container = requires(C& cont, C const& const_cont) {
   typename C::value_type;
@@ -70,20 +79,40 @@ concept container = requires(C& cont, C const& const_cont) {
   { const_cont.empty() } -> std::convertible_to<bool>;
 };
 
+/**
+ * @concept mutable_container
+ * @brief Concept to check if a type C is a mutable container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept mutable_container =
     container<C> and std::same_as<std::iter_reference_t<typename C::iterator>,
                                   typename C::reference>;
 
+/**
+ * @concept sized_container
+ * @brief Concept to check if a type C is a sized container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept sized_container = container<C> and requires(C const& const_cont) {
   { const_cont.size() } -> std::same_as<typename C::size_type>;
 };
 
+/**
+ * @concept clearable_container
+ * @brief Concept to check if a type C is a clearable container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept clearable_container =
     container<C> and requires(C& cont) { cont.clear(); };
 
+/**
+ * @concept reversible_container
+ * @brief Concept to check if a type C is a reversible container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept reversible_container =
     container<C> and requires(C& cont, C const& const_cont) {

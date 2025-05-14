@@ -1,6 +1,6 @@
 # lib/cmake/LibraryCompilerSettings.cmake
 if(MSVC)
-    target_compile_options(CoreMeta PRIVATE /W4 /WX)
+    target_compile_options(CoreMeta PRIVATE /W4 /WX /utf-8)
 else()
     target_compile_options(CoreMeta PRIVATE -Wall -Wextra)
 

@@ -37,7 +37,7 @@ TEST(OdeSolverTest, SolveWithEulerMethod) {
 
   EXPECT_EQ(solution.time_points.size(), 11);  // 0.0 to 1.0 with step 0.1
   EXPECT_NEAR(solution.states.back(), std::exp(1.0),
-              0.1);  // Проверка приближенного решения
+              0.1); 
 }
 
 TEST(OdeSolverTest, SolveWithRungeKutta4) {
@@ -49,7 +49,7 @@ TEST(OdeSolverTest, SolveWithRungeKutta4) {
 
   EXPECT_EQ(solution.time_points.size(), 11);  // 0.0 to 1.0 with step 0.1
   EXPECT_NEAR(solution.states.back(), std::exp(1.0),
-              0.01);  // Более точное решение
+              0.01);  
 }
 
 TEST(OdeSolverTest, AdaptiveRK45Method) {
@@ -60,7 +60,7 @@ TEST(OdeSolverTest, AdaptiveRK45Method) {
   auto result = solver.solve_at(problem, 1.0, 0.1);
 
   EXPECT_NEAR(result, std::exp(1.0),
-              1e-6);  // Проверка точности адаптивного метода
+              1e-6);  
 }
 
 TEST(OdeSolverTest, InvalidStepSizeThrows) {

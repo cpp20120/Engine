@@ -1,456 +1,1012 @@
 #pragma once
+
 #include <concepts>
 #include <coroutine>
 #include <optional>
 #include <type_traits>
 
-#include "dynamic_optional.hpp"
+#include "../dynamic_optional.hpp"
+#include "../meta_functions/meta_functions.hpp"
 
 namespace core::meta::type_traits {
 
+/**
+ * @brief Constant for the mathematical constant e (Euler's number).
+ * @tparam T The type of the constant.
+ */
 template <typename T>
-constexpr T e = T(2.7182818284590452353);
+inline constexpr T e = T(2.7182818284590452353);
 
+/**
+ * @brief Constant for the mathematical constant pi.
+ * @tparam T The type of the constant.
+ */
 template <typename T>
-constexpr T pi = T(3.1415926535897932385);
+inline constexpr T pi = T(3.1415926535897932385);
 
+/**
+ * @brief Template alias for creating a compile-time constant.
+ * @tparam N The value of the constant.
+ * @tparam T The type of the constant.
+ */
 template <auto N, typename T = std::remove_cvref_t<decltype(N)>>
 using c_ = std::integral_constant<T, N>;
 
+/**
+ * @brief Compile-time constant for 0.
+ */
 using c_0 = c_<0>;
 
+/**
+ * @brief Compile-time constant for 1.
+ */
 using c_1 = c_<1>;
 
+/**
+ * @brief Compile-time constant for 2.
+ */
 using c_2 = c_<2>;
 
+/**
+ * @brief Compile-time constant for 3.
+ */
 using c_3 = c_<3>;
 
+/**
+ * @brief Compile-time constant for 4.
+ */
 using c_4 = c_<4>;
 
+/**
+ * @brief Compile-time constant for 5.
+ */
 using c_5 = c_<5>;
 
+/**
+ * @brief Compile-time constant for 6.
+ */
 using c_6 = c_<6>;
 
+/**
+ * @brief Compile-time constant for 7.
+ */
 using c_7 = c_<7>;
 
+/**
+ * @brief Compile-time constant for 8.
+ */
 using c_8 = c_<8>;
 
+/**
+ * @brief Compile-time constant for 9.
+ */
 using c_9 = c_<9>;
 
+/**
+ * @brief Template alias for creating a compile-time boolean constant.
+ * @tparam N The boolean value of the constant.
+ */
 template <auto N>
 using bool_ = std::bool_constant<N>;
 
+/**
+ * @brief Template alias for creating an index type.
+ * @tparam N The value of the index.
+ */
 template <size_t N>
 using index_t = c_<N, size_t>;
 
+/**
+ * @brief Compile-time index constant.
+ * @tparam N The value of the index.
+ */
 template <size_t N>
 constexpr index_t<N> index = {};
 
+/**
+ * @brief Template alias for creating a compile-time constant of a given value.
+ * @tparam v The value of the constant.
+ */
 template <auto v>
 using constant_t = c_<v, std::decay_t<decltype(v)>>;
 
+/**
+ * @brief Compile-time constant of a given value.
+ * @tparam v The value of the constant.
+ */
 template <auto v>
 constexpr constant_t<v> constant = {};
 
+/**
+ * @brief Template alias for creating a tuple type.
+ * @tparam Args The types of the tuple elements.
+ */
 template <typename... Args>
 using tuple_t = std::tuple<Args...>;
 
+/**
+ * @brief Template alias for creating an index sequence.
+ * @tparam N The indices of the sequence.
+ */
 template <auto... N>
 using is = std::index_sequence<N...>;
 
+/**
+ * @brief Extracts the value from a type with a static value member.
+ * @tparam T The type with a static value member.
+ */
 template <typename T>
 inline constexpr auto typev = T::value;
 
+/**
+ * @brief Template alias for extracting the value type from a type.
+ * @tparam T The type with a value_type member.
+ */
 template <typename T>
 using value_t = typename T::value_type;
 
+/**
+ * @brief Negates a boolean value.
+ * @tparam T The type with a boolean value.
+ */
 template <typename T>
 inline constexpr auto negav = std::negation_v<T>;
 
+/**
+ * @brief Template struct to determine if a type has a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct typeof {
   using type = T;
   static constexpr auto value = 0;
 };
 
+/**
+ * @brief Specialization of typeof for types with a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct typeof<T, std::void_t<typename T::type>> {
   using type = typename T::type;
   static constexpr auto value = 1;
 };
 
+/**
+ * @brief Template alias for extracting the nested type from a type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using typeof_t = typename typeof<T>::type;
 
+/**
+ * @brief Extracts the value from a type with a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto typeof_v = typev<typeof_t<T>>;
 
+/**
+ * @brief Template alias for selecting a type based on a boolean condition.
+ * @tparam B The boolean condition.
+ * @tparam T The type to select if the condition is true.
+ * @tparam U The type to select if the condition is false.
+ */
 template <bool B, typename T, typename U>
 using type_if = typeof_t<std::conditional_t<B, T, U>>;
 
+/**
+ * @brief Extracts the value from a type selected based on a boolean condition.
+ * @tparam B The boolean condition.
+ * @tparam T The type to select if the condition is true.
+ * @tparam U The type to select if the condition is false.
+ */
 template <bool B, typename T, typename U>
 inline constexpr auto type_if_v = typev<type_if<B, T, U>>;
 
+/**
+ * @brief Extracts the value from a type selected based on a boolean condition.
+ * @tparam B The boolean condition.
+ * @tparam T The type to select if the condition is true.
+ * @tparam U The type to select if the condition is false.
+ */
 template <bool B, typename T, typename U>
 inline constexpr auto value_if = typev<std::conditional_t<B, T, U>>;
 
+/**
+ * @brief Template alias for selecting a type based on a type condition.
+ * @tparam T The type condition.
+ * @tparam U The type to select if the condition is true.
+ * @tparam V The type to select if the condition is false.
+ */
 template <typename T, typename U, typename V>
 using conditional_of = std::conditional_t<typev<T>, U, V>;
 
+/**
+ * @brief Template struct to determine if a type has a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct has_type : std::false_type {};
 
+/**
+ * @brief Specialization of has_type for types with a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct has_type<T, std::void_t<typename T::type>> : std::true_type {};
 
+/**
+ * @brief Extracts the value from a type with a nested type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto has_type_v = typev<has_type<T>>;
 
+/**
+ * @brief Template struct to determine if a type has a nested value_type.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct has_value_type : std::false_type {
   using value_type = int;
 };
 
+/**
+ * @brief Specialization of has_value_type for types with a nested value_type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct has_value_type<T, std::void_t<value_t<T>>> : std::true_type {
   using value_type = value_t<T>;
 };
 
+/**
+ * @brief Template alias for extracting the nested value_type from a type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using has_value_type_t = value_t<has_value_type<T>>;
 
+/**
+ * @brief Extracts the value from a type with a nested value_type.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto has_value_type_v = typev<has_value_type<T>>;
 
+/**
+ * @brief Template struct to determine if a type has a custom operator new.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct has_new : std::false_type {};
 
+/**
+ * @brief Specialization of has_new for types with a custom operator new.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct has_new<T, std::void_t<decltype(T::operator new(0))>> : std::true_type {
 };
 
+/**
+ * @brief Extracts the value from a type with a custom operator new.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto has_new_v = typev<has_new<T>>;
 
+/**
+ * @brief Template struct to determine if a type has a custom operator delete.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct has_delete : std::false_type {};
 
+/**
+ * @brief Specialization of has_delete for types with a custom operator delete.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct has_delete<T, std::void_t<decltype(T::operator delete(nullptr))>>
     : std::true_type {};
 
+/**
+ * @brief Extracts the value from a type with a custom operator delete.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto has_delete_v = typev<has_delete<T>>;
 
+/**
+ * @brief Template struct to determine if a type is complete.
+ * @tparam T The type to check.
+ */
 template <typename T, typename = std::void_t<>>
 struct is_type_complete : std::false_type {};
 
+/**
+ * @brief Specialization of is_type_complete for complete types.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct is_type_complete<T, std::void_t<decltype(sizeof(T))>> : std::true_type {
 };
 
+/**
+ * @brief Extracts the value from a type that is complete.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto is_type_complete_v = typev<is_type_complete<T>>;
 
+/**
+ * @brief Template struct to determine if a type is a base template of another
+ * type.
+ * @tparam B The base template to check.
+ * @tparam T The type to check.
+ */
 template <template <typename...> typename B, typename T,
           typename = std::void_t<>>
 struct is_base_template_of : std::false_type {};
 
+/**
+ * @brief Specialization of is_base_template_of for types that are base
+ * templates.
+ * @tparam B The base template to check.
+ * @tparam T The type to check.
+ */
 template <template <typename...> typename B, typename T>
 struct is_base_template_of<
     B, T, std::void_t<decltype([]<typename... Args>(B<Args...> *) {
     }(std::declval<T *>()))>> : std::true_type {};
 
+/**
+ * @brief Extracts the value from a type that is a base template of another
+ * type.
+ * @tparam B The base template to check.
+ * @tparam T The type to check.
+ */
 template <template <typename...> typename B, typename T>
 inline constexpr auto is_base_template_of_v = typev<is_base_template_of<B, T>>;
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The type to check.
+ * @return false for non-template types.
+ */
 template <typename T>
 constexpr bool is_template() {
   return false;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <auto...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <typename...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <typename, auto...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <template <auto...> typename...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <template <typename...> typename...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Function to determine if a type is a template.
+ * @tparam T The template to check.
+ * @return true for template types.
+ */
 template <template <template <typename, auto...> typename...> typename T>
 constexpr bool is_template() {
   return true;
 }
 
+/**
+ * @brief Template struct for creating a pair of types.
+ * @tparam T The first type.
+ * @tparam U The second type.
+ */
 template <typename T, typename U>
 struct pair_t {
   using first = T;
   using second = U;
 };
 
+/**
+ * @brief Template alias for extracting the first type from a pair.
+ * @tparam T The pair type.
+ */
 template <typename T>
 using first_t = typename T::first;
 
+/**
+ * @brief Template alias for extracting the second type from a pair.
+ * @tparam T The pair type.
+ */
 template <typename T>
 using second_t = typename T::second;
 
+/**
+ * @brief Template struct for creating a pair of values.
+ * @tparam p The first value.
+ * @tparam q The second value.
+ */
 template <int p, int q>
 struct pair_v {
   static constexpr auto first = p;
   static constexpr auto second = q;
 };
 
+/**
+ * @brief Extracts the first value from a pair.
+ * @tparam T The pair type.
+ */
 template <typename T>
 inline constexpr auto first_v = T::first;
 
+/**
+ * @brief Extracts the second value from a pair.
+ * @tparam T The pair type.
+ */
 template <typename T>
 inline constexpr auto second_v = T::second;
 
+/**
+ * @brief Computes the difference between the second and first values of a pair.
+ * @tparam T The pair type.
+ */
 template <typename T>
 inline constexpr auto pair_diff = second_v<T> - first_v<T>;
 
+/**
+ * @brief Template struct for creating a triple of values.
+ * @tparam p The first value.
+ * @tparam q The second value.
+ * @tparam T The type.
+ */
 template <auto p, auto q, typename T>
 struct triple : std::type_identity<T> {
   static constexpr auto first = p;
   static constexpr auto second = q;
 };
 
+/**
+ * @brief Template struct for creating an identity type.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <int N, typename T>
 struct identity {
   using type = T;
 };
 
+/**
+ * @brief Template alias for extracting the type from an identity.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <int N, typename T>
 using identity_t = typeof_t<identity<N, T>>;
 
+/**
+ * @brief Function to ignore a value.
+ * @tparam N The index.
+ * @tparam T The type of the value.
+ * @param t The value to ignore.
+ * @return The value.
+ */
 template <auto N, typename T>
 constexpr decltype(auto) ignore(T &&t) {
   return std::forward<T>(t);
 }
 
+/**
+ * @brief Template struct for creating a wrapper type.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <auto N, typename T>
 struct wrapper : wrapper<N - 1, std::type_identity<T>> {};
 
+/**
+ * @brief Specialization of wrapper for index 0.
+ * @tparam T The type.
+ */
 template <typename T>
 struct wrapper<0, T> : std::type_identity<T> {};
 
+/**
+ * @brief Template alias for extracting the type from a wrapper.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <auto N, typename T>
 using wrapper_t = typeof_t<wrapper<N, T>>;
 
+/**
+ * @brief Template struct for creating an index type.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <auto N, typename T>
 struct index_type : std::type_identity<T> {
   static constexpr auto value = N;
 };
 
+/**
+ * @brief Template alias for creating an upper index type.
+ * @tparam N The index.
+ * @tparam T The type.
+ */
 template <auto N, typename T>
 using index_upper = wrapper_t<1, index_type<N, T>>;
 
+/**
+ * @brief Template struct for creating an alias type.
+ * @tparam T The type.
+ * @tparam Args The additional types.
+ */
 template <typename T, typename...>
 struct alias {
   using type = T;
 };
 
+/**
+ * @brief Template alias for extracting the type from an alias.
+ * @tparam Args The types.
+ */
 template <typename... Args>
 using alias_t = typeof_t<alias<Args...>>;
 
+/**
+ * @brief Template struct for wrapping types in a template.
+ * @tparam F The template to wrap in.
+ * @tparam Args The types to wrap.
+ */
 template <template <typename...> typename F, typename... Args>
 struct wrapin {
   using type = tuple_t<F<Args>...>;
 };
 
+/**
+ * @brief Template alias for extracting the type from a wrapin.
+ * @tparam F The template to wrap in.
+ * @tparam Args The types to wrap.
+ */
 template <template <typename...> typename F, typename... Args>
 using wrapin_t = typeof_t<wrapin<F, Args...>>;
 
+/**
+ * @brief Template alias for wrapping a type in a template based on a boolean
+ * condition.
+ * @tparam B The boolean condition.
+ * @tparam F The template to wrap in.
+ * @tparam T The type to wrap.
+ */
 template <bool B, template <typename...> typename F, typename T>
 using wrapin_if = std::conditional_t<B, F<T>, T>;
 
+/**
+ * @brief Template struct to determine if a type is contained in a list of
+ * types.
+ * @tparam Args The types to check.
+ */
 template <typename... Args>
 struct contains : std::false_type {};
 
+/**
+ * @brief Specialization of contains for types that are contained.
+ * @tparam T The type to check.
+ * @tparam Args The types to check.
+ */
 template <typename T, typename... Args>
 struct contains<T, Args...> : bool_<(std::is_same_v<T, Args> || ...)> {};
 
+/**
+ * @brief Extracts the value from a type that is contained in a list of types.
+ * @tparam Args The types to check.
+ */
 template <typename...>
 inline constexpr auto contains_v = std::false_type{};
 
+/**
+ * @brief Extracts the value from a type that is contained in a list of types.
+ * @tparam T The type to check.
+ * @tparam Args The types to check.
+ */
 template <typename T, typename... Args>
 inline constexpr auto contains_v<T, Args...> = (std::is_same_v<T, Args> || ...);
 
+/**
+ * @brief Template struct to determine if a list of values comprises a specific
+ * value.
+ * @tparam values The values to check.
+ */
 template <auto... values>
 struct comprise : std::false_type {};
 
+/**
+ * @brief Specialization of comprise for values that are comprised.
+ * @tparam value The value to check.
+ * @tparam values The values to check.
+ */
 template <auto value, auto... values>
 struct comprise<value, values...> : bool_<((value == values) || ...)> {};
 
+/**
+ * @brief Extracts the value from a type that comprises a specific value.
+ * @tparam values The values to check.
+ */
 template <auto...>
 inline constexpr auto comprise_v = std::false_type{};
 
+/**
+ * @brief Extracts the value from a type that comprises a specific value.
+ * @tparam value The value to check.
+ * @tparam values The values to check.
+ */
 template <auto value, auto... values>
 inline constexpr auto comprise_v<value, values...> = ((value == values) || ...);
 
+/**
+ * @brief Template struct to determine if a type exists in a list of types.
+ * @tparam B The base type.
+ * @tparam Args The types to check.
+ */
 template <typename B, typename...>
 struct exists_type : B {};
 
+/**
+ * @brief Specialization of exists_type for types that exist.
+ * @tparam B The base type.
+ * @tparam T The type to check.
+ * @tparam Args The types to check.
+ */
 template <typename B, typename T, typename... Args>
 struct exists_type<B, T, Args...>
     : std::conditional_t<contains_v<T, Args...>, std::negation<B>,
                          exists_type<B, Args...>> {};
 
+/**
+ * @brief Template alias for extracting the type from an exists_type.
+ * @tparam B The base type.
+ * @tparam Args The types to check.
+ */
 template <typename B, typename... Args>
 using exists_type_t = typeof_t<exists_type<B, Args...>>;
 
+/**
+ * @brief Extracts the value from a type that exists in a list of types.
+ * @tparam B The base type.
+ * @tparam Args The types to check.
+ */
 template <typename B, typename... Args>
 inline constexpr auto exists_type_v = typev<exists_type_t<B, Args...>>;
 
+/**
+ * @brief Template alias for determining if a list of types is unique.
+ * @tparam Args The types to check.
+ */
 template <typename... Args>
 using is_unique_type = exists_type<std::true_type, Args...>;
 
+/**
+ * @brief Extracts the value from a type that is unique in a list of types.
+ * @tparam Args The types to check.
+ */
 template <typename...>
 inline constexpr auto is_unique_type_v = std::true_type{};
 
+/**
+ * @brief Extracts the value from a type that is unique in a list of types.
+ * @tparam T The type to check.
+ * @tparam Args The types to check.
+ */
 template <typename T, typename... Args>
 inline constexpr auto is_unique_type_v<T, Args...> =
     !contains_v<T, Args...> && is_unique_type_v<Args...>;
 
+/**
+ * @brief Template alias for determining if a list of types has duplicates.
+ * @tparam Args The types to check.
+ */
 template <typename... Args>
 using has_duplicates_type = exists_type<std::false_type, Args...>;
 
+/**
+ * @brief Extracts the value from a type that has duplicates in a list of types.
+ * @tparam Args The types to check.
+ */
 template <typename...>
 inline constexpr auto has_duplicates_type_v = std::false_type{};
 
+/**
+ * @brief Extracts the value from a type that has duplicates in a list of types.
+ * @tparam T The type to check.
+ * @tparam Args The types to check.
+ */
 template <typename T, typename... Args>
 inline constexpr auto has_duplicates_type_v<T, Args...> =
     contains_v<T, Args...> || has_duplicates_type_v<Args...>;
 
-template <typename B, auto...>
-struct exists_value : B {};
-
-template <typename B, auto value, auto... values>
-struct exists_value<B, value, values...>
-    : std::conditional_t<comprise_v<value, values...>, std::negation<B>,
-                         exists_value<B, values...>> {};
-
-template <typename B, auto... values>
-using exists_value_t = typeof_t<exists_value<B, values...>>;
-
-template <typename B, auto... values>
-inline constexpr auto exists_value_v = typev<exists_value_t<B, values...>>;
-
+/**
+ * @brief Template struct to determine if a list of values is unique.
+ * @tparam values The values to check.
+ */
 template <auto... values>
 using is_unique_value = exists_value<std::true_type, values...>;
 
+/**
+ * @brief Extracts the value from a type that is unique in a list of values.
+ * @tparam values The values to check.
+ */
 template <auto...>
 inline constexpr auto is_unique_value_v = std::true_type{};
 
+/**
+ * @brief Extracts the value from a type that is unique in a list of values.
+ * @tparam value The value to check.
+ * @tparam values The values to check.
+ */
 template <auto value, auto... values>
 inline constexpr auto is_unique_value_v<value, values...> =
     negav<comprise<value, values...>> && is_unique_value_v<values...>;
 
+/**
+ * @brief Template alias for determining if a list of values has duplicates.
+ * @tparam values The values to check.
+ */
 template <auto... values>
 using has_duplicates_value = exists_value<std::false_type, values...>;
 
+/**
+ * @brief Extracts the value from a type that has duplicates in a list of
+ * values.
+ * @tparam values The values to check.
+ */
 template <auto...>
 inline constexpr auto has_duplicates_value_v = std::false_type{};
 
+/**
+ * @brief Extracts the value from a type that has duplicates in a list of
+ * values.
+ * @tparam value The value to check.
+ * @tparam values The values to check.
+ */
 template <auto value, auto... values>
 inline constexpr auto has_duplicates_value_v<value, values...> =
     typev<comprise<value, values...>> || has_duplicates_value_v<values...>;
 
+/**
+ * @brief Template struct to determine if a type exists based on a boolean
+ * condition.
+ * @tparam B The boolean condition.
+ * @tparam T The type to check.
+ */
 template <bool B, typename T>
 struct exists;
 
+/**
+ * @brief Specialization of exists for template types with a boolean condition.
+ * @tparam T The template to check.
+ * @tparam Args The types to check.
+ */
 template <template <typename...> typename T, typename... Args>
 struct exists<true, T<Args...>> {
   using type = is_unique_type<Args...>;
 };
 
+/**
+ * @brief Specialization of exists for template types with a boolean condition.
+ * @tparam T The template to check.
+ * @tparam U The type to check.
+ * @tparam values The values to check.
+ */
 template <template <typename, auto...> typename T, typename U, auto... values>
 struct exists<true, T<U, values...>> {
   using type = is_unique_value<values...>;
 };
 
+/**
+ * @brief Specialization of exists for template types with a boolean condition.
+ * @tparam T The template to check.
+ * @tparam Args The types to check.
+ */
 template <template <typename...> typename T, typename... Args>
 struct exists<false, T<Args...>> {
   using type = has_duplicates_type<Args...>;
 };
 
+/**
+ * @brief Specialization of exists for template types with a boolean condition.
+ * @tparam T The template to check.
+ * @tparam U The type to check.
+ * @tparam values The values to check.
+ */
 template <template <typename, auto...> typename T, typename U, auto... values>
 struct exists<false, T<U, values...>> {
   using type = has_duplicates_value<values...>;
 };
 
+/**
+ * @brief Template alias for extracting the type from an exists.
+ * @tparam B The boolean condition.
+ * @tparam T The type to check.
+ */
 template <bool B, typename T>
 using exists_t = typeof_t<exists<B, T>>;
 
+/**
+ * @brief Extracts the value from a type that exists based on a boolean
+ * condition.
+ * @tparam B The boolean condition.
+ * @tparam T The type to check.
+ */
 template <bool B, typename T>
 inline constexpr auto exists_v = typev<exists_t<B, T>>;
 
+/**
+ * @brief Template alias for determining if a type is unique.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using is_unique = exists<true, T>;
 
+/**
+ * @brief Template alias for extracting the type from an is_unique.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using is_unique_t = typeof_t<is_unique<T>>;
 
+/**
+ * @brief Extracts the value from a type that is unique.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto is_unique_v = typev<is_unique_t<T>>;
 
+/**
+ * @brief Template alias for determining if a type has duplicates.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using has_duplicates = exists<false, T>;
 
+/**
+ * @brief Template alias for extracting the type from a has_duplicates.
+ * @tparam T The type to check.
+ */
 template <typename T>
 using has_duplicates_t = typeof_t<has_duplicates<T>>;
 
+/**
+ * @brief Extracts the value from a type that has duplicates.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto has_duplicates_v = typev<has_duplicates_t<T>>;
 
+/**
+ * @brief Template alias for ternary conditional type selection.
+ * @tparam A The first boolean condition.
+ * @tparam B The second boolean condition.
+ * @tparam X The type to select if both conditions are true.
+ * @tparam Y The type to select if the first condition is true and the second is
+ * false.
+ * @tparam Z The type to select if the first condition is false.
+ */
 template <bool A, bool B, typename X, typename Y, typename Z>
 using ternary_conditional = std::conditional<A, std::conditional_t<B, X, Y>, Z>;
 
+/**
+ * @brief Template alias for extracting the type from a ternary_conditional.
+ * @tparam A The first boolean condition.
+ * @tparam B The second boolean condition.
+ * @tparam X The type to select if both conditions are true.
+ * @tparam Y The type to select if the first condition is true and the second is
+ * false.
+ * @tparam Z The type to select if the first condition is false.
+ */
 template <bool A, bool B, typename X, typename Y, typename Z>
 using ternary_conditional_t = typeof_t<ternary_conditional<A, B, X, Y, Z>>;
 
+/**
+ * @brief Template struct for inheriting from multiple types.
+ * @tparam Args The types to inherit from.
+ */
 template <typename... Args>
 struct inherit : Args... {};
 
+/**
+ * @brief Template struct to determine if a type is inheritable.
+ * @tparam T The type to check.
+ */
 template <typename T, typename U = std::void_t<>>
 struct is_inheritable : std::false_type {};
 
+/**
+ * @brief Specialization of is_inheritable for inheritable types.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct is_inheritable<T, std::void_t<inherit<T>>> : std::true_type {};
 
+/**
+ * @brief Extracts the value from a type that is inheritable.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto is_inheritable_v = typev<is_inheritable<T>>;
 
+/**
+ * @brief Template struct to determine if a pack of types is inheritable.
+ * @tparam Args The types to check.
+ */
 template <typename... Args>
 struct is_inheritable_pack : bool_<(is_inheritable_v<Args> && ...)> {};
 
+/**
+ * @brief Extracts the value from a type that is inheritable in a pack of types.
+ * @tparam Args The types to check.
+ */
 template <typename... Args>
 inline constexpr auto is_inheritable_pack_v =
     typev<is_inheritable_pack<Args...>>;
 
+/**
+ * @brief Template struct to determine if a type is instantiable.
+ * @tparam T The type to check.
+ */
 template <typename T>
 struct is_instantiable : std::negation<std::is_abstract<T>> {};
 
+/**
+ * @brief Extracts the value from a type that is instantiable.
+ * @tparam T The type to check.
+ */
 template <typename T>
 inline constexpr auto is_instantiable_v = typev<is_instantiable<T>>;
-
 
 /**
  * @brief Identity type that holds the given type T
@@ -1531,37 +2087,67 @@ template <class _Type, template <class...> class _Template>
 struct is_specialization
     : bool_constant<is_specialization_v<_Type, _Template>> {};
 
-
+/**
+ * @brief Checks if type T can be streamed into type S
+ *
+ * @tparam S The stream type
+ * @tparam T The type to be streamed
+ * @tparam (unnamed) SFINAE helper parameter
+ *
+ * Primary template defaults to false_type
+ */
 template <typename S, typename T, typename = std::void_t<>>
 struct is_streamable : std::false_type {};
 
+/**
+ * @brief Specialization of is_streamable for streamable types
+ *
+ * Checks for existence of operator<< between S and T, and ensures S and T are
+ * different types
+ */
 template <typename S, typename T>
 struct is_streamable<
     S, T,
-    std::void_t<disable_if_t<std::is_same_v<S, T>>,
+    std::void_t<core::meta::meta_funcs::disable_if_t<std::is_same_v<S, T>>,
                 decltype(std::declval<std::add_lvalue_reference_t<S>>()
                          << std::declval<T>())>> : std::true_type {};
 
+/// Helper alias for is_streamable::type
 template <typename S, typename T>
 using is_streamable_t = typeof_t<is_streamable<S, T>>;
 
+/// Helper variable template for is_streamable::value
 template <typename S, typename T>
 inline constexpr auto is_streamable_v = typev<is_streamable_t<S, T>>;
 
+/**
+ * @brief Checks if type T is iterable (has begin() and end())
+ *
+ * @tparam T Type to check
+ * @tparam (unnamed) SFINAE helper parameter
+ */
 template <typename T, typename = std::void_t<>>
 struct is_iterable : std::false_type {};
 
+/// Specialization for iterable types
 template <typename T>
 struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())),
                                   decltype(std::end(std::declval<T>()))>>
     : std::true_type {};
 
+/// Helper variable template for is_iterable::value
 template <typename T>
 inline constexpr auto is_iterable_v = typev<is_iterable<T>>;
 
+/**
+ * @brief Checks if type T is a standard container
+ *
+ * Verifies presence of container typedefs and methods
+ */
 template <typename T, typename = std::void_t<>>
 struct is_container : std::false_type {};
 
+/// Specialization for container types
 template <typename T>
 struct is_container<
     T,
@@ -1573,122 +2159,238 @@ struct is_container<
                 decltype(std::declval<T>().cbegin()),
                 decltype(std::declval<T>().cend())>> : std::true_type {};
 
+/// Helper variable template for is_container::value
 template <typename T>
 inline constexpr auto is_container_v = typev<is_container<T>>;
 
+/**
+ * @brief Checks if type T is a pointer to type U
+ *
+ * @tparam T Pointer type to check
+ * @tparam U Underlying type
+ */
 template <typename T, typename U>
 struct is_pointer_of : std::is_same<T, std::add_pointer_t<U>> {};
 
+/// Helper variable template for is_pointer_of::value
 template <typename T, typename U>
 inline constexpr auto is_pointer_of_v = typev<is_pointer_of<T, U>>;
 
+/**
+ * @brief Checks if type Args is an instantiation of template T
+ *
+ * @tparam T Template to check against
+ * @tparam Args Type to test
+ */
 template <template <typename...> typename T, typename Args>
 struct is_instance_of : std::false_type {};
 
+/// Specialization for matching template instantiations
 template <template <typename...> typename T, typename... Args>
 struct is_instance_of<T, T<Args...>> : std::true_type {};
 
+/// Helper variable template for is_instance_of::value
 template <template <typename...> typename T, typename Args>
 inline constexpr auto is_instance_of_v = typev<is_instance_of<T, Args>>;
 
+/**
+ * @brief Checks if type Args is a sequence type (like integer_sequence)
+ *
+ * @tparam T Sequence template to check against
+ * @tparam Args Type to test
+ */
 template <template <typename, auto...> typename T, typename Args>
 struct is_sequence_of : std::false_type {};
 
+/// Specialization for sequence types
 template <template <typename, auto...> typename T, typename U, auto... values>
 struct is_sequence_of<T, T<U, values...>> : std::true_type {};
 
+/// Helper variable template for is_sequence_of::value
 template <template <typename, auto...> typename T, typename Args>
 inline constexpr auto is_sequence_of_v = typev<is_sequence_of<T, Args>>;
 
+/**
+ * @brief Checks if type T is a std::tuple
+ */
 template <typename T>
 struct is_tuple : is_instance_of<std::tuple, T> {};
 
+/// Helper variable template for is_tuple::value
 template <typename T>
-inline constexpr auto is_tuple_v = typev<is_tuple<T>>;
+inline  auto is_tuple_v = typev<is_tuple<T>>;
 
+/**
+ * @brief Checks if type T is a sequence (integer_sequence or similar)
+ */
 template <typename T>
 struct is_sequence : is_sequence_of<std::integer_sequence, T> {};
 
+/// Helper variable template for is_sequence::value
 template <typename T>
 inline constexpr auto is_sequence_v = typev<is_sequence<T>>;
 
+/**
+ * @brief Checks if type T is a variadic template with type parameters
+ */
 template <typename T>
 struct is_variadic_type : std::false_type {};
 
+/// Specialization for variadic type templates
 template <template <typename...> typename T, typename... Args>
 struct is_variadic_type<T<Args...>> : std::true_type {};
 
+/// Helper alias for is_variadic_type::type
 template <typename T>
 using is_variadic_type_t = typeof_t<is_variadic_type<T>>;
 
+/// Helper variable template for is_variadic_type::value
 template <typename T>
 inline constexpr auto is_variadic_type_v = typev<is_variadic_type_t<T>>;
 
+/**
+ * @brief Checks if type T is a variadic template with value parameters
+ */
 template <typename T>
 struct is_variadic_value : std::false_type {};
 
+/// Specialization for value-only variadic templates
 template <template <auto...> typename T, auto... Args>
 struct is_variadic_value<T<Args...>> : std::true_type {};
 
+/// Specialization for mixed type/value variadic templates
 template <template <typename, auto...> typename T, typename U, auto... Args>
 struct is_variadic_value<T<U, Args...>> : std::true_type {};
 
+/// Helper alias for is_variadic_value::type
 template <typename T>
 using is_variadic_value_t = typeof_t<is_variadic_value<T>>;
 
+/// Helper variable template for is_variadic_value::value
 template <typename T>
 inline constexpr auto is_variadic_value_v = typev<is_variadic_value_t<T>>;
 
+/**
+ * @brief Checks if type T is any kind of variadic template
+ */
 template <typename T>
 struct is_variadic : bool_<is_variadic_type_v<T> || is_variadic_value_v<T>> {};
 
+/// Helper alias for is_variadic::type
 template <typename T>
 using is_variadic_t = typeof_t<is_variadic<T>>;
 
+/// Helper variable template for is_variadic::value
 template <typename T>
 inline constexpr auto is_variadic_v = typev<is_variadic_t<T>>;
 
+/**
+ * @brief Checks if all types in Args are variadic type templates
+ */
 template <typename... Args>
 struct is_variadic_type_pack : bool_<(is_variadic_type_v<Args> && ...)> {};
 
+/// Helper alias for is_variadic_type_pack::type
 template <typename... Args>
 using is_variadic_type_pack_t = typeof_t<is_variadic_type_pack<Args...>>;
 
+/// Helper variable template for is_variadic_type_pack::value
 template <typename... Args>
 inline constexpr auto is_variadic_type_pack_v =
     typev<is_variadic_type_pack_t<Args...>>;
 
+/**
+ * @brief Checks if all types in Args are variadic value templates
+ */
 template <typename... Args>
 struct is_variadic_value_pack : bool_<(is_variadic_value_v<Args> && ...)> {};
 
+/// Helper alias for is_variadic_value_pack::type
 template <typename... Args>
 using is_variadic_value_pack_t = typeof_t<is_variadic_value_pack<Args...>>;
 
+/// Helper variable template for is_variadic_value_pack::value
 template <typename... Args>
 inline constexpr auto is_variadic_value_pack_v =
     typev<is_variadic_value_pack_t<Args...>>;
 
+/**
+ * @brief Checks if all types in Args are any kind of variadic templates
+ */
 template <typename... Args>
 struct is_variadic_pack : bool_<is_variadic_type_pack_v<Args...> ||
                                 is_variadic_value_pack_v<Args...>> {};
 
+/// Helper alias for is_variadic_pack::type
 template <typename... Args>
 using is_variadic_pack_t = typeof_t<is_variadic_pack<Args...>>;
 
+/// Helper variable template for is_variadic_pack::value
 template <typename... Args>
 inline constexpr auto is_variadic_pack_v = typev<is_variadic_pack_t<Args...>>;
 
+/**
+ * @brief Concept checking if Args is a pack of function pointers
+ */
 template <typename... Args>
 concept is_function_pack = requires(Args... args) {
   []<typename... R, typename... T>(R (*...f)(T...)) {}(args...);
 };
 
+/**
+ * @brief Checks if type T is a group of variadic templates
+ */
 template <typename T>
 struct is_group : std::false_type {};
 
+/// Specialization for group types
 template <template <typename...> typename T, typename... Args>
 struct is_group<T<Args...>> : is_variadic_pack<Args...> {};
 
+/// Helper variable template for is_group::value
 template <typename T>
 inline constexpr auto is_group_v = typev<is_group<T>>;
+
+/**
+ * @brief Checks if a type is std::optional
+ * @tparam T Type to check
+ */
+template <class T>
+struct is_optional : std::false_type {};
+
+/**
+ * @brief Specialization for std::optional
+ * @tparam T Optional value type
+ */
+template <class T>
+struct is_optional<std::optional<T>> : std::true_type {};
+
+/**
+ * @brief Helper variable template for is_optional
+ * @tparam T Type to check
+ */
+template <class T>
+inline constexpr bool is_optional_v = is_optional<T>::value;
+
+/**
+ * @brief Checks if a type is dynamic_optional
+ * @tparam T Type to check
+ */
+template <class T>
+struct is_dynamic_optional : std::false_type {};
+
+/**
+ * @brief Specialization for dynamic_optional
+ * @tparam T Optional value type
+ */
+template <class T>
+struct is_dynamic_optional<::core::meta::dynamic_optional::dynamic_optional<T>>
+    : std::true_type {};
+
+/**
+ * @brief Helper variable template for is_dynamic_optional
+ * @tparam T Type to check
+ */
+template <class T>
+inline constexpr bool is_dynamic_optional_v = is_dynamic_optional<T>::value;
 }  // namespace core::meta::type_traits

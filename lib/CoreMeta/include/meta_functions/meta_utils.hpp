@@ -108,14 +108,14 @@ template <bool B, typename L, typename R>
 using rename_if_t = typeof_t<rename_if<B, L, R>>;
 
 template <typename T>
-  requires is_variadic_type_v<T>
+  requires core::meta::type_traits::is_variadic_type_v<T>
 using as_tuple = rename<T, std::tuple<>>;
 
 template <typename T>
 using as_tuple_t = typeof_t<as_tuple<T>>;
 
 template <bool B, typename T>
-  requires is_variadic_type_v<T>
+  requires core::meta::type_traits::is_variadic_type_v<T>
 using as_tuple_if = std::conditional_t<B, as_tuple<T>, std::type_identity<T>>;
 
 template <bool B, typename T>

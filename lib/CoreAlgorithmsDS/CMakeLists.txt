@@ -10,11 +10,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #find_package(mdspan REQUIRED)
 
 add_subdirectory(src)
-#target_link_libraries(CoreMath PRIVATE fmt::fmt)
-#target_link_libraries(CoreMath PRIVATE TBB::tbb)
-#target_link_libraries(CoreMath PRIVATE mdspan::mdspan)
+#target_link_libraries(CoreAlgorithmsDS PRIVATE fmt::fmt)
+#target_link_libraries(CoreAlgorithmsDS PRIVATE TBB::tbb)
+#target_link_libraries(CoreAlgorithmsDS PRIVATE mdspan::mdspan)
 # Версионирование
-set_target_properties(CoreMath PROPERTIES
+set_target_properties(CoreAlgorithmsDS PROPERTIES
         VERSION 1.0.0
         SOVERSION 1
 )
@@ -30,9 +30,9 @@ include(cmake/LibraryCP.cmake)
 option(BUILD_SHARED_LIBS "Build as shared library" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 
-#configure_library_type(CoreMath_test)
+#configure_library_type(CoreAlgorithmsDS_test)
 
-#target_include_directories(CoreMath_test PUBLIC
+#target_include_directories(CoreAlgorithmsDS_test PUBLIC
 #        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 #        $<INSTALL_INTERFACE:include>
 #)

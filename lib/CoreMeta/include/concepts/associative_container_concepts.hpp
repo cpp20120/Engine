@@ -1,9 +1,65 @@
 #pragma once
 
+#include "basic_concepts.hpp"
 #include "container_concepts.hpp"
+#include "iterator_concepts.hpp"
 
+/**
+ * @namespace core::meta::concepts
+ * @brief Namespace for meta-programming concepts and utilities.
+ */
 namespace core::meta::concepts {
 
+/**
+ * @concept Emplaceable
+ * @brief Concept to check if a type C supports emplace operations with given
+ * arguments.
+ * @tparam C The container type to check.
+ * @tparam Iterator The iterator type.
+ * @tparam Args The argument types to emplace.
+ */
+template <typename C, typename Iterator, typename... Args>
+concept Emplaceable = requires(C& cont, Iterator const& hint, Args&&... args) {
+  {
+    cont.emplace_hint(hint, std::forward<Args>(args)...)
+  } -> std::same_as<typename C::iterator>;
+};
+
+/**
+ * @concept Insertable
+ * @brief Concept to check if a type C supports insert operations with given
+ * value.
+ * @tparam C The container type to check.
+ * @tparam Iterator The iterator type.
+ * @tparam Value The value type to insert.
+ */
+template <typename C, typename Iterator, typename Value>
+concept Insertable = requires(C& cont, Iterator const& hint, Value&& value) {
+  {
+    cont.insert(hint, std::forward<Value>(value))
+  } -> std::same_as<typename C::iterator>;
+};
+
+/**
+ * @concept Erasable
+ * @brief Concept to check if a type C supports erase operations.
+ * @tparam C The container type to check.
+ * @tparam Iterator The iterator type.
+ * @tparam Key The key type to erase.
+ */
+template <typename C, typename Iterator, typename Key>
+concept Erasable = requires(C& cont, Iterator const& pos, Iterator const& first,
+                            Iterator const& last, Key const& key) {
+  { cont.erase(pos) } -> std::same_as<typename C::iterator>;
+  { cont.erase(first, last) } -> std::same_as<typename C::iterator>;
+  { cont.erase(key) } -> std::same_as<typename C::size_type>;
+};
+
+/**
+ * @concept associative_container
+ * @brief Concept to check if a type C is an associative container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept associative_container =
     container<C> and sized_container<C> and clearable_container<C> and
@@ -26,11 +82,7 @@ concept associative_container =
       };
 
       requires not std::default_initializable<typename C::value_type> or
-                   requires(typename C::const_iterator const& hint) {
-                     {
-                       cont.emplace_hint(hint)
-                     } -> std::same_as<typename C::iterator>;
-                   };
+                   Emplaceable<C, typename C::const_iterator>;
 
       requires not std::copyable<typename C::value_type> or
                    requires(
@@ -46,44 +98,34 @@ concept associative_container =
                      C(first, last);
                      C(init_list);
                      cont = init_list;
-
-                     {
-                       cont.insert(hint, value)
-                     } -> std::same_as<typename C::iterator>;
-
+                     Insertable<C, typename C::const_iterator,
+                                typename C::value_type const&>;
                      cont.insert(first, last);
                      cont.insert(init_list);
-
-                     {
-                       cont.emplace_hint(hint, value)
-                     } -> std::same_as<typename C::iterator>;
+                     Emplaceable<C, typename C::const_iterator,
+                                 typename C::value_type const&>;
                    };
 
       requires not std::movable<typename C::value_type> or
                    requires(typename C::value_type&& tmp_value,
                             typename C::const_iterator const& hint) {
-                     {
-                       cont.insert(hint, std::move(tmp_value))
-                     } -> std::same_as<typename C::iterator>;
-
-                     {
-                       cont.emplace_hint(hint, std::move(tmp_value))
-                     } -> std::same_as<typename C::iterator>;
+                     Insertable<C, typename C::const_iterator,
+                                typename C::value_type&&>;
+                     Emplaceable<C, typename C::const_iterator,
+                                 typename C::value_type&&>;
                    };
 
-      requires requires(typename C::const_iterator const& pos,
-                        typename C::const_iterator const& first,
-                        typename C::const_iterator const& last,
-                        typename C::key_type const& key) {
-        { cont.erase(pos) } -> std::same_as<typename C::iterator>;
-        { cont.erase(first, last) } -> std::same_as<typename C::iterator>;
-        { cont.erase(key) } -> std::same_as<typename C::size_type>;
-      };
+      Erasable<C, typename C::const_iterator, typename C::key_type>;
     };
 
+/**
+ * @concept unique_associative_container
+ * @brief Concept to check if a type C is a unique associative container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept unique_associative_container =
-    associative_container<C> and requires(C& cont, C const& const_cont) {
+    associative_container<C> and requires(C& cont) {
       requires not std::default_initializable<typename C::value_type> or
                    requires(typename C::const_iterator const& hint) {
                      {
@@ -96,7 +138,6 @@ concept unique_associative_container =
                      {
                        cont.insert(value)
                      } -> std::same_as<std::pair<typename C::iterator, bool>>;
-
                      {
                        cont.emplace(value)
                      } -> std::same_as<std::pair<typename C::iterator, bool>>;
@@ -107,16 +148,20 @@ concept unique_associative_container =
                      {
                        cont.insert(std::move(tmp_value))
                      } -> std::same_as<std::pair<typename C::iterator, bool>>;
-
                      {
                        cont.emplace(std::move(tmp_value))
                      } -> std::same_as<std::pair<typename C::iterator, bool>>;
                    };
     };
 
+/**
+ * @concept multiple_associative_container
+ * @brief Concept to check if a type C is a multiple associative container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept multiple_associative_container =
-    associative_container<C> and requires(C& cont, C const& const_cont) {
+    associative_container<C> and requires(C& cont) {
       requires not std::default_initializable<typename C::value_type> or
                    requires(typename C::const_iterator const& hint) {
                      { cont.emplace() } -> std::same_as<typename C::iterator>;
@@ -127,7 +172,6 @@ concept multiple_associative_container =
                      {
                        cont.insert(value)
                      } -> std::same_as<typename C::iterator>;
-
                      {
                        cont.emplace(value)
                      } -> std::same_as<typename C::iterator>;
@@ -138,13 +182,17 @@ concept multiple_associative_container =
                      {
                        cont.insert(std::move(tmp_value))
                      } -> std::same_as<typename C::iterator>;
-
                      {
                        cont.emplace(std::move(tmp_value))
                      } -> std::same_as<typename C::iterator>;
                    };
     };
 
+/**
+ * @concept ordered_associative_container
+ * @brief Concept to check if a type C is an ordered associative container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept ordered_associative_container =
     associative_container<C> and requires(C& cont, C const& const_cont) {
@@ -164,7 +212,6 @@ concept ordered_associative_container =
 
       requires requires(typename C::key_compare const& key_comp) {
         C(key_comp);
-
         requires not std::copyable<typename C::value_type> or
                      requires(
                          mock_const_iterator<typename C::value_type,
@@ -192,14 +239,31 @@ concept ordered_associative_container =
       };
     };
 
+/**
+ * @concept ordered_unique_associative_container
+ * @brief Concept to check if a type C is an ordered unique associative
+ * container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept ordered_unique_associative_container =
     unique_associative_container<C> and ordered_associative_container<C>;
 
+/**
+ * @concept ordered_multiple_associative_container
+ * @brief Concept to check if a type C is an ordered multiple associative
+ * container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept ordered_multiple_associative_container =
     multiple_associative_container<C> and ordered_associative_container<C>;
 
+/**
+ * @concept unordered_associative_container
+ * @brief Concept to check if a type C is an unordered associative container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept unordered_associative_container =
     associative_container<C> and requires(C& cont, C const& const_cont) {
@@ -250,10 +314,22 @@ concept unordered_associative_container =
       };
     };
 
+/**
+ * @concept unordered_unique_associative_container
+ * @brief Concept to check if a type C is an unordered unique associative
+ * container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept unordered_unique_associative_container =
     unique_associative_container<C> and unordered_associative_container<C>;
 
+/**
+ * @concept unordered_multiple_associative_container
+ * @brief Concept to check if a type C is an unordered multiple associative
+ * container.
+ * @tparam C The type to check.
+ */
 template <typename C>
 concept unordered_multiple_associative_container =
     multiple_associative_container<C> and unordered_associative_container<C>;

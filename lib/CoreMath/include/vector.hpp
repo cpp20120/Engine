@@ -3,6 +3,8 @@
 #include <initializer_list>
 
 #include "./concepts.hpp"
+#include "./parallel/parallel_executor.hpp"
+
 
 namespace core::math::vector {
 /**
@@ -453,6 +455,24 @@ class Vector {
  private:
   std::array<T, N> data;  ///< Internal storage for vector components
 };
+
+namespace parallel {
+template <std::size_t N, typename T>
+void parallel_vector_add(Vector<N, T>& result, const Vector<N, T>& a,
+                         const Vector<N, T>& b) {
+  core::math::parallel::parallel_for(
+      size_t(0), N, [&](size_t i) { result[i] = a[i] + b[i]; });
+}
+
+template <std::size_t N, typename T>
+T parallel_vector_dot(const Vector<N, T>& a, const Vector<N, T>& b) {
+  T result = T{};
+  core::math::parallel::parallel_reduce(
+      size_t(0), N, [&](size_t i) { return a[i] * b[i]; }, std::plus<T>(),
+      result);
+  return result;
+}
+}  // namespace parallel
 
 /// @name Common Vector Type Aliases
 /// @{

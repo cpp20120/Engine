@@ -3,6 +3,8 @@
 #include <fmt/core.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
+#include <tbb/task_group.h>
 
 #include <algorithm>
 #include <array>
@@ -15,7 +17,10 @@
 #include <utility>
 #include <vector>
 
+#include "./parallel/parallel_executor.hpp"  // Include your parallel utilities
+
 namespace core::math::diffeq {
+
 /**
  * @concept ArithmeticValue
  * @brief Concept for arithmetic types supporting basic operations
@@ -30,7 +35,7 @@ concept ArithmeticValue = requires([[maybe_unused]] T a, [[maybe_unused]] T b) {
   requires std::is_arithmetic_v<T>;
   { a + b } -> std::same_as<T>;
   { a - b } -> std::same_as<T>;
-  { a * b } -> std::same_as<T>;
+  { a* b } -> std::same_as<T>;
   { a / b } -> std::same_as<T>;
   { -a } -> std::same_as<T>;
 };
@@ -41,6 +46,7 @@ concept ArithmeticValue = requires([[maybe_unused]] T a, [[maybe_unused]] T b) {
  */
 template <typename T>
 concept FloatingPoint = std::is_floating_point_v<T>;
+
 /**
  * @concept SequenceContainer
  * @brief Concept for sequence containers with arithmetic value_type
@@ -59,14 +65,9 @@ concept SequenceContainer = requires(T t) {
   t[0];
   requires ArithmeticValue<typename T::value_type>;
 };
-// Forward declarations
-template <FloatingPoint ValueType>
-class OdeSolver;
-
-template <FloatingPoint ValueType>
-class InitialValueProblem;
 
 namespace detail {
+
 /**
  * @internal
  * @brief Creates a range sequence in a dynamic container
@@ -96,6 +97,7 @@ constexpr Container create_range(typename Container::value_type start,
 
   return sequence;
 }
+
 /**
  * @internal
  * @brief Creates a range sequence in a fixed-size array
@@ -139,6 +141,7 @@ class InitialValueProblem {
  public:
   /// Type alias for differential equation function
   using DifferentialFunction = std::function<ValueType(ValueType, ValueType)>;
+
   /**
    * @brief Constructs a new InitialValueProblem
    *
@@ -160,6 +163,7 @@ class InitialValueProblem {
           "Differential equation function must be callable");
     }
   }
+
   /**
    * @brief Evaluates the differential equation at given (t, y)
    *
@@ -173,8 +177,10 @@ class InitialValueProblem {
 
   /// @return Initial time t0
   ValueType initial_time() const { return initial_time_; }
+
   /// @return Initial state y(t0)
   ValueType initial_state() const { return initial_state_; }
+
   /// @return Problem description
   std::string_view description() const { return description_; }
 
@@ -205,12 +211,14 @@ class OdeSolver {
     AdaptiveRK45,  /// Adaptive Runge-Kutta-Fehlberg
     Verlet
   };
+
   /// Solution structure containing time points and states
   struct Solution {
     std::vector<ValueType> time_points;  ///< Time grid points
     std::vector<ValueType> states;       ///< Computed solution values
     std::vector<ValueType> errors;       ///< Error estimates (adaptive methods)
   };
+
   /**
    * @brief Constructs a new OdeSolver
    *
@@ -220,10 +228,13 @@ class OdeSolver {
   explicit OdeSolver(IntegrationMethod method = IntegrationMethod::RungeKutta4,
                      bool parallelize = true)
       : method_(method), parallelize_(parallelize) {}
+
   /// Sets the integration method
   void set_method(IntegrationMethod method) { method_ = method; }
+
   /// @return Current integration method
   IntegrationMethod method() const { return method_; }
+
   /**
    * @brief Solves the IVP over a fixed time grid
    *
@@ -255,6 +266,7 @@ class OdeSolver {
 
     return solution;
   }
+
   /**
    * @brief Solves the IVP and returns solution at specific target time
    *
@@ -298,6 +310,7 @@ class OdeSolver {
 
     return current_state;
   }
+
   /**
    * @brief Performs Verlet integration for 2nd order ODEs
    *
@@ -383,14 +396,11 @@ class OdeSolver {
     if (method_ == IntegrationMethod::RungeKutta4 ||
         method_ == IntegrationMethod::Euler ||
         method_ == IntegrationMethod::Heun) {
-      tbb::parallel_for(
-          tbb::blocked_range<size_t>(1, solution.time_points.size()),
-          [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); ++i) {
-              solution.states[i] =
-                  single_step(problem, solution.time_points[i - 1],
-                              solution.states[i - 1], step_size);
-            }
+      core::math::parallel::parallel_for(
+          size_t(1), solution.time_points.size(), [&](size_t i) {
+            solution.states[i] =
+                single_step(problem, solution.time_points[i - 1],
+                            solution.states[i - 1], step_size);
           });
     } else {
       sequential_solve(problem, solution, step_size);
@@ -412,7 +422,7 @@ class OdeSolver {
     }
   }
 
-  // individual step implementations
+  // Individual step implementations
   static ValueType euler_step(const InitialValueProblem<ValueType>& problem,
                               ValueType time, ValueType state, ValueType step) {
     return state + step * problem.evaluate(time, state);
@@ -437,7 +447,7 @@ class OdeSolver {
     return state + (step / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
   }
 
-  //  solution implementations
+  // Solution implementations
   static void euler_method(const InitialValueProblem<ValueType>& problem,
                            Solution& solution, ValueType step_size) {
     for (std::size_t i = 1; i < solution.time_points.size(); ++i) {
@@ -612,7 +622,7 @@ auto make_ivp(typename InitialValueProblem<ValueType>::DifferentialFunction f,
  * auto times = make_time_range<std::vector<double>>(0.0, 1.0, 0.1);
  */
 template <SequenceContainer Container>
-auto make_time_range([[maybe_unused]] typename Container::value_type start,
+auto make_time_range(typename Container::value_type start,
                      typename Container::value_type end,
                      typename Container::value_type step) {
   return detail::create_range<Container>(start, end, step);

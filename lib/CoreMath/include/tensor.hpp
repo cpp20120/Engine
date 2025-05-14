@@ -13,6 +13,8 @@
 #include <tuple>
 #include <vector>
 
+#include "./parallel/parallel_executor.hpp"
+
 /**
  * @defgroup Tensor Math Tensor
  * @brief N-dimensional tensor implementation with common mathematical
@@ -362,6 +364,23 @@ class Tensor {
     std::print("\n");
   }
 };
+
+namespace parallel {
+template <typename T, size_t Rank>
+void parallel_tensor_add(Tensor<T, Rank>& result, const Tensor<T, Rank>& a,
+                         const Tensor<T, Rank>& b) {
+  auto total_size = compute_total_size(a.shape());
+  core::math::parallel::parallel_for(size_t(0), total_size, [&](size_t i) {
+    std::array<size_t, Rank> indices;
+    size_t temp = i;
+    for (int dim = Rank - 1; dim >= 0; --dim) {
+      indices[dim] = temp % a.shape()[dim];
+      temp /= a.shape()[dim];
+    }
+    result(indices) = a(indices) + b(indices);
+  });
+}
+}  // namespace parallel
 
 }  // namespace core::math::tensor
 

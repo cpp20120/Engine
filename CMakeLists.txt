@@ -1,7 +1,7 @@
 # Main CMakeLists.txt
 cmake_minimum_required(VERSION 3.26)
 set(CMAKE_TOOLCHAIN_FILE "E:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "VCPKG toolchain file")
-project(ShizEngine CXX)
+project(ShizEngine C CXX)
 
 # docs
 option(BUILD_DOCS "Build documentation" ON)

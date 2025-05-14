@@ -17,6 +17,9 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+#include "./dynamic_optional.hpp"
+
 namespace core::meta::reflection {
 /**
  * @brief A view adapter that presents a range in reverse order
@@ -261,6 +264,7 @@ constexpr auto GetTemplateArgs(T<Args...>) {
   return TypeList<Args...>{};
 }
 
+
 /**
  * @brief Wrapper for compile-time values
  * @tparam I The wrapped value
@@ -278,6 +282,16 @@ template <typename... Ts>
 struct TypeList {
   using Types = std::tuple<Ts...>;                    ///< Tuple representation
   static constexpr std::size_t Size = sizeof...(Ts);  ///< Number of types
+
+  template <typename F>
+  static constexpr void ForEachOptionalField(F&& f) {
+    (..., [&] {
+      if constexpr (is_instantiation_of_v<
+                        Head, core::meta::dynamic_optional::dynamic_optional>) {
+        f(static_cast<const Field<Fields>&>(*this));
+      }
+    }());
+  }
 };
 
 /**
@@ -927,7 +941,12 @@ struct Description : protected Fields... {
   constexpr void ForEach(F&& f) const {
     (static_cast<void>(f(static_cast<const Fields&>(*this))), ...);
   }
-
+  /**
+   * @brief Get the index of a field by its Field descriptor
+   * @tparam F The field pointer or enum value
+   * @param field The Field descriptor to find
+   * @return Index of the field if found, NPos otherwise
+   */
   template <auto F>
   static constexpr size_t IndexOf(Field<F>) {
     size_t result = NPos;
@@ -936,11 +955,21 @@ struct Description : protected Fields... {
     return result;
   }
 
+  /**
+   * @brief Get the index of a field by its member pointer
+   * @tparam F The member pointer or enum value
+   * @return Index of the field if found, NPos otherwise
+   */
   template <auto F>
   static constexpr size_t IndexOf() {
     return IndexOf<F>(Field<F>{});
   }
 
+ /**
+   * @brief Get the index of a field by its name
+   * @param name The name of the field to find
+   * @return Index of the field if found, NPos otherwise
+   */
   constexpr size_t IndexOf(std::string_view name) const {
     size_t result = NPos;
     size_t count = size_t(-1);
@@ -951,36 +980,76 @@ struct Description : protected Fields... {
   }
 };
 
+/**
+ * @brief Get a field reference by index (non-const version)
+ * @tparam Idx The index of the field to get
+ * @tparam Cls The class type being described
+ * @tparam Parent The parent class type
+ * @tparam Fields The field types
+ * @param desc The Description object to query
+ * @return Reference to the requested field
+ */
 template <size_t Idx, typename Cls, typename Parent, typename... Fields>
 constexpr auto& ByIndex(Description<Cls, Parent, Fields...>& desc) {
   using F = typename Detail::PackIdx<Idx, Fields...>::Type;
   return desc.template Get<F::Value>();
 }
 
+/**
+ * @brief Get a field reference by index (const version)
+ * @tparam Idx The index of the field to get
+ * @tparam Cls The class type being described
+ * @tparam Parent The parent class type
+ * @tparam Fields The field types
+ * @param desc The Description object to query
+ * @return Const reference to the requested field
+ */
 template <size_t Idx, typename Cls, typename Parent, typename... Fields>
 constexpr const auto& ByIndex(Description<Cls, Parent, Fields...> const& desc) {
   using F = typename PackIdx<Idx, Fields...>::Type;
   return desc.template Get<F::Value>();
 }
 
+/**
+ * @brief Traits class to get attributes for a type (default case)
+ * @tparam F The type to get attributes for
+ * @tparam Enabled SFINAE helper
+ */
 template <typename F, typename = void>
 struct GetAttrs {
-  using Type = Attrs<>;
+  using Type = Attrs<>;  ///< Default empty attributes
 };
 
+/**
+ * @brief Traits class to check if a type has attributes
+ * @tparam C The type to check
+ * @tparam Enabled SFINAE helper
+ */
 template <typename C, typename = void>
 struct HasAttrs : std::false_type {};
 
+/**
+ * @brief Specialization of GetAttrs for types with attributes
+ * @tparam C The type to get attributes for
+ */
 template <typename C>
 struct GetAttrs<C, std::enable_if_t<HasAttrs<C>::value>> {
-  using Type = typename C::GetAttrs;
+  using Type = typename C::GetAttrs;  ///< Type's own attributes
 };
 
+/**
+ * @brief Specialization of GetAttrs for types with reflected attributes
+ * @tparam C The type to get attributes for
+ */
 template <typename C>
 struct GetAttrs<C, std::enable_if_t<HasAttrs<C>::value>> {
-  using Type = decltype(GetAttrs(Tag<C>{}));
+  using Type = decltype(GetAttrs(Tag<C>{}));  ///< Reflected attributes
 };
 
+/**
+ * @brief Specialization of GetAttrs for Field types with attributes
+ * @tparam _Field The field pointer/enum value
+ */
 template <auto _Field>
 struct GetAttrs<Field<_Field>,
                 std::enable_if_t<Detail::HasFieldAttrs<Field<_Field>>::value>> {
@@ -988,25 +1057,57 @@ struct GetAttrs<Field<_Field>,
       decltype(GetAttrs(Tag<typename Field<Field>::Cls>{}, Field<Field>{}));
 };
 
+/**
+ * @brief Specialization of GetAttrs for Description types
+ * @tparam Cls The described class type
+ * @tparam Rest Additional template parameters
+ */
 template <typename Cls, typename... Rest>
 struct GetAttrs<Description<Cls, Rest...>> : GetAttrs<Cls> {};
 
+/**
+ * @brief Specialization of GetAttrs for const-qualified types
+ * @tparam Any The type to get attributes for
+ */
 template <typename Any>
 struct GetAttrs<const Any> : GetAttrs<Any> {};
 
+/**
+ * @brief Helper type alias for GetAttrs::Type
+ * @tparam T The type to get attributes for
+ */
 template <typename T>
 using GetAttrsT = typename GetAttrs<T>::Type;
 
+/**
+ * @brief Extract specific attribute type from a type's attributes
+ * @tparam T The attribute type to extract
+ * @tparam From The type to extract from
+ */
 template <typename T, typename From>
 using ExtractAttrT =
     typename decltype(Detail::GetAttr<T>(GetAttrsT<From>{}))::Type;
 
+/**
+ * @brief Check if a type has a specific attribute
+ * @tparam T The attribute type to check for
+ * @tparam Who The type to check
+ */
 template <typename T, typename Who>
 constexpr bool HasAttrV = Detail::Has<T>(GetAttrsT<Who>{});
 
+/**
+ * @brief Traits class to check if a type is described in reflection system
+ * @tparam T The type to check
+ * @tparam Enabled SFINAE helper
+ */
 template <typename T, typename = void>
 struct IsDescribed : std::false_type {};
 
+/**
+ * @brief Specialization for described types
+ * @tparam T The type to check
+ */
 template <typename T>
 struct IsDescribed<T, std::void_t<decltype(GetDescription(Tag<T>{}))>>
     : std::true_type {};
@@ -1029,6 +1130,15 @@ constexpr auto IsDescribedStructV = IsDescribed<T>::value && !std::is_enum_v<T>;
 template <typename T>
 constexpr auto IsDescribedEnumV = IsDescribed<T>::value && std::is_enum_v<T>;
 
+/**
+ * @brief Get the reflection description for type T
+ * @tparam T The type to get description for
+ * @return Constexpr description object containing reflection data
+ * @throws static_assert if type T is not described (missing DESCRIBE macro)
+ *
+ * @note Requires type T to be described using DESCRIBE() macro
+ * @see DESCRIBE()
+ */
 template <typename T>
 constexpr auto Get() {
   static_assert(IsDescribedV<T>, "Please use DESCRIBE() macro");
@@ -1036,6 +1146,16 @@ constexpr auto Get() {
   return res;
 }
 
+/**
+ * @brief Create a description for a class without inheritance
+ * @tparam Cls The class type to describe
+ * @tparam Fields Variadic list of member pointers/fields
+ * @param clsName The name of the class as string view
+ * @param names Comma-separated field names as string view
+ * @return Description object containing class metadata
+ *
+ * @note Field names will be extracted sequentially from names parameter
+ */
 template <typename Cls, auto... Fields>
 constexpr auto Describe(std::string_view clsName, std::string_view names) {
   Description<Cls, void, Field<Fields>...> result = {};
@@ -1046,6 +1166,21 @@ constexpr auto Describe(std::string_view clsName, std::string_view names) {
   return result;
 }
 
+/**
+ * @brief Create a description for an inherited class
+ * @tparam Cls The derived class type
+ * @tparam Fields Variadic list of member pointers/fields
+ * @tparam ParCls The parent class type
+ * @tparam ParCls2 Helper template parameter
+ * @tparam ParFields Parent class fields
+ * @param parent Parent class description
+ * @param clsName The name of the derived class
+ * @param names Comma-separated field names for new fields
+ * @return Description object containing combined metadata
+ *
+ * @note Inherits field names from parent description
+ * @note New field names are extracted from names parameter
+ */
 template <typename Cls, auto... Fields, typename ParCls, typename ParCls2,
           auto... ParFields>
 constexpr auto Describe(
@@ -1062,8 +1197,23 @@ constexpr auto Describe(
   return result;
 }
 
+/**
+ * @brief Helper struct for building class descriptions
+ * @tparam Cls The class type being described
+ *
+ * @note Used internally by DESCRIBE macros
+ * @see DESCRIBE()
+ * @see DESCRIBE_INHERIT()
+ */
 template <typename Cls>
 struct _ {
+  /**
+   * @brief Create description with given fields and arguments
+   * @tparam Fs Variadic list of member pointers/fields
+   * @tparam Args Argument types for Describe function
+   * @param args Arguments to forward to Describe
+   * @return Constructed description object
+   */
   template <auto... Fs, typename... Args>
   static constexpr auto Desc(Args... args) {
     return Describe<Cls, Fs...>(args...);
@@ -1094,6 +1244,16 @@ std::string Serialize(const T& obj) {
   });
   return result;
 }
+
+template <typename T>
+std::string Serialize(
+    const core::meta::dynamic_optional::dynamic_optional<T>& obj) {
+  if (!obj.has_value()) {
+    return "null";
+  }
+  return Serialize(obj.value());
+}
+
 /**
  * @brief Creates an instance of type T using reflection
  * @tparam T Type to instantiate
@@ -1120,7 +1280,10 @@ template <template <typename...> typename Template, typename... Ts>
 struct TypeDescription<Template<Ts...>> {
   static constexpr auto Name = "TemplateInstance";
 };
-
+/**
+ * @brief type trait for check can be type be get meta info via reflection
+ * @tparam T type for check
+ */
 template <typename T, typename = void>
 struct has_reflect : std::false_type {};
 
@@ -1245,6 +1408,67 @@ using FieldValue = decltype([] {
 })();
 
 /**
+ * @brief Creates a variant type capable of holding all supported field types
+ * and their optional versions
+ * @tparam Ts... List of types to include in the variant
+ * @param type_list TypeList containing the supported types
+ * @return std::variant type that can hold:
+ *         - std::monostate (for empty optionals)
+ *         - All base types from Ts...
+ *         - All unwrapped optional types (Ts...::value_type)
+ *
+ * @details This factory function generates a variant type that encompasses:
+ *          1. The monostate for representing empty optionals
+ *          2. All fundamental supported types
+ *          3. All value types contained in dynamic_optional versions of
+ * supported types
+ */
+template <typename... Ts>
+auto MakeFieldValueVariant(TypeList<Ts...>) {
+  return std::variant<
+      std::monostate,  // For empty optional state
+      Ts...,           // All base types
+      std::decay_t<decltype(std::declval<core::meta::dynamic_optional::
+                                             dynamic_optional<Ts>>()
+                                .value())>...  // All unwrapped optional types
+      >{};
+}
+
+/**
+ * @brief Type alias defining the complete field value variant type
+ *
+ * @details FieldValue is a variant that can hold:
+ *          - Primitive types (bool, int, float, double)
+ *          - String types (std::string)
+ *          - Container types (std::vector<int>, std::vector<std::string>)
+ *          - Custom types (MyClass)
+ *          - Their corresponding dynamic_optional wrapped versions
+ *          - std::monostate for empty optionals
+ *
+ * The actual type is constructed by:
+ * 1. Defining supported types in SupportedTypes TypeList
+ * 2. Passing them through MakeFieldValueVariant
+ *
+ * @note The use of decltype with immediately invoked lambda ensures this is:
+ *       - Computed at compile-time
+ *       - Doesn't require storage
+ *       - Maintains all constexpr properties
+ */
+using FieldValue = decltype([] {
+  using SupportedTypes = TypeList<bool,              // Boolean values
+                                  int,               // Integer numbers
+                                  float,             // Floating point numbers
+                                  double,            // Double precision numbers
+                                  std::string,       // String values
+                                  std::vector<int>,  // Integer vectors
+                                  std::vector<std::string>,  // String vectors
+                                  MyClass                    // Custom user type
+                                  >;
+
+  return MakeFieldValueVariant(SupportedTypes{});
+})();
+
+/**
  * @brief Container for field name-value pairs
  */
 struct FieldValueContainer {
@@ -1299,29 +1523,56 @@ struct Field : public Attributes... {
   std::string_view Name;  ///< Field name
 };
 /**
- * @brief Field information structure for reflection
- * @tparam Struct The containing struct type
- * @tparam FieldType The type of the field
+ * @brief Field information structure for reflection system
+ * @tparam Struct The containing struct/class type
+ * @tparam FieldType The type of the field being described
+ *
+ * @note Used to store metadata about class fields including:
+ *       - Field name
+ *       - Pointer to member
  */
-template <typename Struct, typename FiledType>
+template <typename Struct, typename FieldType>
 struct FieldInfo {
-  std::string_view name;
-  FieldInfo Struct::* ptr;
+  std::string_view name;    ///< Name of the field as string view
+  FieldType Struct::* ptr;  ///< Pointer to the class member
 };
 
+/**
+ * @brief Main description structure containing reflection metadata for a type
+ * @tparam Cls The class type being described
+ * @tparam Parent The parent class type (void if no inheritance)
+ * @tparam Fields Variadic list of Field types describing members
+ *
+ * @details Inherits from all Field types to enable structured access to
+ * metadata. Provides various methods to iterate and query field information.
+ */
 template <typename Cls, typename Parent, typename... Fields>
 struct Description : protected Fields... {
-  using Type = Cls;
-  using ParentType = Parent;
-  std::string_view Name;
+  using Type = Cls;           ///< The class type being described
+  using ParentType = Parent;  ///< Parent class type (void if none)
+  std::string_view Name;      ///< Name of the class
+
+  /// @brief True if the described type is an enum
   static constexpr auto IsEnum = std::is_enum_v<Cls>;
+
+  /// @brief Count of fields in this description (excluding methods)
   static constexpr auto FieldsCount = sizeof...(Fields);
 
+  /**
+   * @brief Get field metadata by member pointer
+   * @tparam Member The member pointer to look up
+   * @return Reference to the Field descriptor for the member
+   */
   template <auto Member>
   constexpr auto& Get() {
     return static_cast<Field<Member>&>(*this);
   }
 
+  /**
+   * @brief Iterate over all fields (non-method members)
+   * @tparam F Callable type accepting field descriptors
+   * @param f Callable to invoke for each field
+   */
   template <typename F>
   constexpr void ForEachField(F&& f) const {
     auto helper = [&f](auto& field) {
@@ -1330,6 +1581,11 @@ struct Description : protected Fields... {
     (helper(static_cast<const Fields&>(*this)), ...);
   }
 
+  /**
+   * @brief Iterate over all methods (member functions)
+   * @tparam F Callable type accepting method descriptors
+   * @param f Callable to invoke for each method
+   */
   template <typename F>
   constexpr void ForEachMethod(F&& f) const {
     auto helper = [&f](auto& field) {
@@ -1338,11 +1594,16 @@ struct Description : protected Fields... {
     (helper(static_cast<const Fields&>(*this)), ...);
   }
 
+  /**
+   * @brief Iterate over all members (both fields and methods)
+   * @tparam F Callable type accepting member descriptors
+   * @param f Callable to invoke for each member
+   */
   template <typename F>
   constexpr void ForEach(F&& f) const {
     (static_cast<void>(f(static_cast<const Fields&>(*this))), ...);
   }
-
+  /*
   constexpr void PrintTree(int indent = 0) const {
     auto indent_str = std::string(indent, ' ');
     std::cout << indent_str << Name << "\n";
@@ -1352,7 +1613,7 @@ struct Description : protected Fields... {
     ForEachMethod([&](const auto& method) {
       std::cout << indent_str << "  " << method.Name << "()\n";
     });
-  }
+  }              */
 };
 /**
  * @brief Checks if a type is an instantiation of a template
@@ -1426,8 +1687,64 @@ using ExtractTemplateParameters_t =
 template <typename T, template <typename..., auto...> class Template>
 constexpr auto GetTemplateParameters() {
   static_assert(is_instantiation_of_mixed_v<T, Template>,
-                "T должен быть специализацией указанного смешанного шаблона");
+                "T must be a specialization of the mixed template");
   return ExtractTemplateParameters_t<T, Template>{};
+}
+/**
+ * @brief TypeDescription specialization for dynamic_optional types
+ * @tparam T The type contained in the dynamic_optional
+ *
+ * @details Provides metadata about dynamic_optional instantiations:
+ * - Name identifies it as "dynamic_optional"
+ * - ValueType exposes the contained type
+ */
+template <typename T>
+struct TypeDescription<core::meta::dynamic_optional::dynamic_optional<T>> {
+  static constexpr std::string_view Name =
+      "dynamic_optional";  ///< Type name identifier
+  using ValueType = T;     ///< The type contained in the optional
+};
+
+/**
+ * @brief Type trait identifying dynamic_optional instantiations
+ * @tparam T Type to check
+ *
+ * @details Inherits from std::true_type when T is a dynamic_optional
+ * specialization, std::false_type otherwise.
+ *
+ * @see is_instantiation_of
+ */
+template <typename T>
+struct is_instantiation_of<T, core::meta::dynamic_optional::dynamic_optional>
+    : std::true_type {};
+
+/**
+ * @brief Attribute getter specialization for dynamic_optional
+ * @tparam T The type contained in the dynamic_optional
+ *
+ * @details Inherits attributes from the contained type T, allowing
+ * optional types to maintain the same attributes as their value type.
+ */
+template <typename T>
+struct GetAttrs<core::meta::dynamic_optional::dynamic_optional<T>>
+    : GetAttrs<T> {};
+
+/**
+ * @brief Gets reflection description for dynamic_optional types
+ * @tparam T The type contained in the optional
+ * @param tag Tag type for dynamic_optional<T>
+ * @return Description object with modified name indicating optional
+ *
+ * @note The returned description appends " (dynamic_optional)" to the
+ * base type's name while preserving all other metadata.
+ */
+template <typename T>
+constexpr auto GetDescription(
+    Tag<core::meta::dynamic_optional::dynamic_optional<T>>) {
+  using BaseType = T;
+  constexpr auto baseDesc = GetDescription(Tag<BaseType>{});
+  return Description<core::meta::dynamic_optional::dynamic_optional<BaseType>,
+                     void>{baseDesc.Name + " (dynamic_optional)"};
 }
 
 /**
@@ -1505,6 +1822,16 @@ constexpr auto GetTemplateParameters() {
 #define DESCRIBE_GET(cls, ...)                                    \
   inline constexpr auto GetAttrs(::utils::Reflection::Tag<cls>) { \
     return ::utils::Reflection::Attrs<__VA_ARGS__>{};             \
+  }
+
+#define DESCRIBE_OPTIONAL_FIELD(Struct, Field)                  \
+  FieldInfo<Struct, decltype(Struct::Field)> {                  \
+    #Field, &Struct::Field, [](const auto& obj) -> FieldValue { \
+      if (obj.Field.has_value()) {                              \
+        return obj.Field.value();                               \
+      }                                                         \
+      return std::monostate{};                                  \
+    }                                                           \
   }
 
 }  // namespace Describe

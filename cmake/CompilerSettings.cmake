@@ -19,6 +19,7 @@ if(MSVC)
             /Zc:inline
             /MP
             /nologo
+            /utf-8
     )
 
     if(ENABLE_MSVC_SDL)

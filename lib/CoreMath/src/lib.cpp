@@ -7,15 +7,15 @@ using namespace core::math::matrix;
 
 auto equation = []([[maybe_unused]] double t, double y) { return y; };
 
-auto problem = core::math::diffeq::make_ivp(equation, 0.0, 1.0, "y' = y");
+auto test_problem = core::math::diffeq::make_ivp(equation, 0.0, 1.0, "y' = y");
 
 core::math::diffeq::OdeSolver<double> solver(
     core::math::diffeq::OdeSolver<double>::IntegrationMethod::Euler);
 core::math::diffeq::OdeSolver<double> solverRK(
     core::math::diffeq::OdeSolver<double>::IntegrationMethod::AdaptiveRK45);
 
-auto solution = solver.solve(problem, 1.0, 0.1);
-auto solutionRK = solverRK.solve(problem, 1.0, 0.1);
+auto test_solution = solver.solve(test_problem, 1.0, 0.1);
+auto solutionRK = solverRK.solve(test_problem, 1.0, 0.1);
 
 core::math::matrix::mat3x3 matA{1.0f, 2.0f, 3.0f, 4.0f, 5.0f,
                                 6.0f, 7.0f, 8.0f, 9.0f};
@@ -35,9 +35,9 @@ float det = core::math::matrix::determinant(matA);
 auto translate = core::math::matrix::transform::translate2d(10.0f, 5.0f);
 auto rotate =
     core::math::matrix::transform::rotate2d(3.14159f / 4);  // 45 градусов
-auto scale = core::math::matrix::transform::scale2d(2.0f, 3.0f);
+auto test_scale = core::math::matrix::transform::scale2d(2.0f, 3.0f);
 
-auto transform2D = translate * rotate * scale;
+auto transform2D = translate * rotate * test_scale;
 
 auto translate3D = core::math::matrix::transform::translate3d(1.0f, 2.0f, 3.0f);
 auto rotateX =

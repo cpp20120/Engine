@@ -12,13 +12,13 @@ find_package(mdspan REQUIRED)
 add_subdirectory(src)
 #target_link_libraries(CoreMath PRIVATE fmt::fmt)
 target_link_libraries(CoreMath PRIVATE TBB::tbb)
-target_link_libraries(CoreMath PRIVATE mdspan::mdspan)
+target_link_libraries(CoreMath PRIVATE std::mdspan)
 # Версионирование
 set_target_properties(CoreMath PROPERTIES
         VERSION 1.0.0
         SOVERSION 1
 )
-include(${PROJECT_SOURCE_DIR}/cmake/FindHWlock.cmake)
+include(../../cmake/FindHWlock.cmake)
 
 if(PKG_CONFIG_FOUND)
   pkg_check_modules(HWLOC IMPORTED_TARGET hwloc>=1.0)
@@ -41,11 +41,10 @@ endif()
 
 option(ENABLE_HWLOC "Enable Portable Hardware Locality software package"
         ${DEFAULT_ENABLE_HWLOC})
-setup_cached_var(ENABLE_HWLOC "Using hwloc"
-        "Requested build with hwloc, but no hwloc found!"
-        "Hwloc found, but requested build without it")
+#setup_cached_var(ENABLE_HWLOC "Using hwloc"
+#        "Requested build with hwloc, but no hwloc found!"
+#        "Hwloc found, but requested build without it")
 
-include(sanitizers)
 
 ######################################################################################
 
