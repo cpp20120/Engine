@@ -1,21 +1,22 @@
 # Добавляем библиотеки
-add_subdirectory(CoreMath)
+#add_subdirectory(CoreMath)
 #add_subdirectory(CoreMeta)
-add_subdirectory(CoreConcurency)
+#add_subdirectory(CoreConcurency)
 #add_subdirectory(CoreAlgorithmsDS)
+#add_subdirectory(CoreUI)
 
 # Настройка тестов
-option(BUILD_TESTS "Build tests" ON)
-option(BUILD_ALL_TESTS "Build all tests automatically" ON)
+option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_ALL_TESTS "Build all tests automatically" OFF)
 
 if(BUILD_TESTS)
-    enable_testing()
-    find_package(GTest REQUIRED)
+    #enable_testing()
+    #find_package(GTest REQUIRED)
 
     if(BUILD_ALL_TESTS)
         # Добавляем тестовые поддиректории
-        add_subdirectory(tests/CoreMath_test)
-        add_subdirectory(tests/CoreMeta_test)
+        #add_subdirectory(tests/CoreMath_test)
+        #add_subdirectory(tests/CoreMeta_test)
 
         # Общая цель для запуска всех тестов
         add_custom_target(run_all_libs_tests

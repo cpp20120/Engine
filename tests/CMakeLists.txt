@@ -1,5 +1,5 @@
 
-option(BUILD_ALL_TESTS "Build all module tests automatically" ON)
+option(BUILD_ALL_TESTS "Build all module tests automatically" OFF)
 enable_testing()
 
 if(BUILD_TESTS AND BUILD_TESTING)

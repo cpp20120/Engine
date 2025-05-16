@@ -8,24 +8,37 @@
       "version>=": "11.0.2"
     },
     {
+      "name": "folly",
+      "version>=": "2025.04.14.00"
+    },
+    {
       "name": "gtest",
       "version>=": "1.10.0"
+    },
+    {
+      "name": "libassert",
+      "version>=": "2.1.5"
     },
     {
       "name": "mdspan",
       "version>=": "0.6.0"
     },
     {
-      "name": "folly",
-      "version>=": "2025.04.14.00#0"
-    },
-    {
       "name": "tbb",
-      "version>=": "2022.1.0#0"
+      "version>=": "2022.1.0"
     },
     {
-      "name": "libassert",
-      "version>=": "2.1.5"
+      "name": "glfw3",
+      "version>=": "3.4"
+    },
+    {
+      "name": "imgui",
+      "version>=": "1.91.9",
+      "features": [ "glfw-binding", "opengl3-binding" ]
+    },
+    {
+      "name": "glad",
+      "version>=": "0.1.36"
     }
   ],
   "overrides": [

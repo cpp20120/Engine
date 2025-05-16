@@ -1,0 +1,1 @@
+add_library(CoreUI imgui_wrapper.cpp)

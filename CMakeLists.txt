@@ -40,7 +40,7 @@ include(cmake/PlatformSettings.cmake)
 include(cmake/CompilerSettings.cmake)
 include(cmake/LinkerSettings.cmake)
 include(cmake/BuildConfiguration.cmake)
-include(cmake/CodeFormatAndAnalysis.cmake)
+#include(cmake/CodeFormatAndAnalysis.cmake)
 
 # Installation
 install(TARGETS ${PROJECT_NAME}

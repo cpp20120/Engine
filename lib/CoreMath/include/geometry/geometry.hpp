@@ -44,6 +44,8 @@ template <typename T>
 class CatmullRomSpline;
 template <typename T>
 class BSpline;
+template <typename T>
+class ConvexPolyndron;
 
 /**
  * @class Point
@@ -690,6 +692,25 @@ class Capsule {
     T dist = projection.distance(sphere.center);
     return dist <= (radius + sphere.radius);
   }
+
+  /**
+   * @brief Checks if two capsules intersect.
+   * @param other The other capsule.
+   * @return True if the capsules intersect, false otherwise.
+   */
+  template <typename T>
+  constexpr bool Capsule<T>::intersects(const Capsule<T>& other) const {
+    Line<T> line1(start, end - start);
+    Line<T> line2(other.start, other.end - other.start);
+
+    Point<T> closest1 = line1.projectPoint(other.start);
+    Point<T> closest2 = line2.projectPoint(start);
+
+    T distance = closest1.distance(closest2);
+    return distance <= (radius + other.radius);
+  }
+
+
 };
 
 /**
@@ -1000,5 +1021,108 @@ class BSpline {
     return term1 + term2;
   }
 };
+
+/**
+ * @class Torus
+ * @brief Represents a torus in 3D space.
+ * @tparam T The type of the coordinates (e.g., float, double).
+ */
+template <typename T>
+class Torus {
+ public:
+  Point<T> center;
+  Point<T> normal;
+  T majorRadius;
+  T minorRadius;
+
+  /**
+   * @brief Constructs a Torus with given center, normal, major radius, and
+   * minor radius.
+   * @param center The center of the torus.
+   * @param normal The normal vector of the torus.
+   * @param majorRadius The major radius of the torus.
+   * @param minorRadius The minor radius of the torus.
+   */
+  constexpr Torus(const Point<T>& center, const Point<T>& normal, T majorRadius,
+                  T minorRadius)
+      : center(center),
+        normal(normal.normalized()),
+        majorRadius(majorRadius),
+        minorRadius(minorRadius) {
+    if (majorRadius < 0 || minorRadius < 0)
+      throw std::runtime_error("Radii must be positive");
+  }
+
+  /**
+   * @brief Checks if the torus intersects with a sphere.
+   * @param sphere The sphere to check.
+   * @return True if the torus intersects with the sphere, false otherwise.
+   */
+  constexpr bool intersects(const Sphere<T>& sphere) const {
+    // Simplified intersection check
+    T distance = (center - sphere.center).magnitude();
+    return distance <= (majorRadius + sphere.radius + minorRadius);
+  }
+};
+
+/**
+ * @class ConvexPolyhedron
+ * @brief Represents a convex polyhedron in 3D space.
+ * @tparam T The type of the coordinates (e.g., float, double).
+ */
+template <typename T>
+class ConvexPolyhedron {
+ public:
+  std::vector<Plane<T>> faces;
+
+  /**
+   * @brief Constructs a ConvexPolyhedron with given faces.
+   * @param faces The faces of the polyhedron.
+   */
+  constexpr ConvexPolyhedron(const std::vector<Plane<T>>& faces)
+      : faces(faces) {
+    if (faces.size() < 4) {
+      throw std::runtime_error("ConvexPolyhedron requires at least 4 faces");
+    }
+  }
+
+  /**
+   * @brief Checks if the polyhedron intersects with a sphere.
+   * @param sphere The sphere to check.
+   * @return True if the polyhedron intersects with the sphere, false otherwise.
+   */
+  constexpr bool intersects(const Sphere<T>& sphere) const {
+    Point<T> closestPoint = sphere.center;
+    for (const auto& face : faces) {
+      T distance = distanceToPlane(face, sphere.center);
+      if (distance > sphere.radius) {
+        return false;
+      }
+      closestPoint = sphere.center - face.normal * distance;
+    }
+
+    // Check if the closest point is inside the polyhedron
+    for (const auto& face : faces) {
+      if (distanceToPlane(face, closestPoint) >
+          std::numeric_limits<T>::epsilon()) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * @brief Computes the distance from a point to a plane.
+   * @param plane The plane.
+   * @param point The point.
+   * @return The distance.
+   */
+  constexpr T distanceToPlane(const Plane<T>& plane,
+                              const Point<T>& point) const {
+    return plane.normal.dot(point) + plane.d;
+  }
+};
+
 
 }  // namespace core::math::geometry
