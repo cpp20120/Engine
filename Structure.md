@@ -6,30 +6,47 @@
 ├── cmake (contains cmake scripts for project)
 ├── docs
 │   └── CMakeLists.txt
-│   └── Doxyfile.in  
+│   └── Doxyfile.in 
+|   └── generate_docs.py
 ├── include
 │   └── *.hpp
 ├── lib
-|   └──lib1_name (contains first library name)
+|   └──CoreMath (contains MathLib)
 |		├── cmake (contains cmake scripts for library)
 |		├── include
 │			└── *.hpp
 |		├── src
 │			└── CMakeLists.txt
 |			└── *.cpp
-|		├── test (contains test for lib)
+|		├── test (contains test for math lib)
 |		└── CMakeLists.txt
-|		└── lib_test_*.cpp(name will changes to library component name)
-|   └──lib2_name (contains second library name)
+|   └──CoreConcurency (contains ConcurencyLib)
 |		├── cmake (contains cmake scripts for library)
 |		├── include
 │			└── *.hpp
 |		├── src
 │			└── CMakeLists.txt
 |			└── *.cpp
-|		├── test (contains test for lib)
+|		├── test (contains test for Concurency lib)
 |		└── CMakeLists.txt
-|		└── lib_test_*.cpp(name will changes to library component name)
+|   └──CoreMeta (contains MetaprogrammingLib)
+|		├── cmake (contains cmake scripts for library)
+|		├── include
+│			└── *.hpp
+|		├── src
+│			└── CMakeLists.txt
+|			└── *.cpp
+|		├── test (contains test for meta lib)
+|		└── CMakeLists.txt
+|   └──CoreUtils (contains UtilsLib)
+|		├── cmake (contains cmake scripts for library)
+|		├── include
+│			└── *.hpp
+|		├── src
+│			└── CMakeLists.txt
+|			└── *.cpp
+|		├── test (contains test for Utils lib)
+|		└── CMakeLists.txt
 │── shaders(for graphics project)
 │   └── *.frag/.vert
 ├── src
