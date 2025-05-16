@@ -63,8 +63,8 @@ class Vector {
     requires(sizeof...(Args) == N && (std::is_convertible_v<Args, T> && ...))
   constexpr Vector(Args... args) : data{static_cast<T>(args)...} {}
 
-  constexpr auto begin() noexcept { return data_.begin(); }
-  constexpr auto end() noexcept { return data_.end(); }
+  constexpr auto begin() noexcept { return data.begin(); }
+  constexpr auto end() noexcept { return data.end(); }
 
   /// @}
 

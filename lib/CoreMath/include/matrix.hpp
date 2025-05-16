@@ -397,7 +397,7 @@ struct MatrixMultiplyExpr {
   const Rhs& rhs;
   MatrixMultiplyExpr(const Lhs& l, const Rhs& r) : lhs(l), rhs(r) {}
   auto operator()(size_t i, size_t j) const {
-    T sum = T(0);
+    auto sum = {};
     for (size_t k = 0; k < lhs.size().second; ++k) {
       sum += lhs(i, k) * rhs(k, j);
     }
