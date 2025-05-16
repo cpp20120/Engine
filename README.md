@@ -1,5 +1,7 @@
 ## Engine
 
+[![](https://tokei.rs/b1/github/cpp20120/Engine)](https://github.com/cpp20120/Engine).
+
 Currently at arch stage and core implementations(can be changed)
 
 
