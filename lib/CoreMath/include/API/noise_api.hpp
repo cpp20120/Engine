@@ -252,5 +252,4 @@ class NoiseAPI {
     noise.domainWarp(point, warp_amplitude);
   }
 };
-
 }  // namespace core::math::noise::api
