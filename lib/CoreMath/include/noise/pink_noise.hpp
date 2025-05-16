@@ -1,16 +1,40 @@
 #pragma once
 #include <array>
 #include <numeric>
+#include <random>
 
 namespace core::math::noise {
 
+/**
+ * @class PinkNoise
+ * @brief A class to generate pink noise.
+ *
+ * Pink noise, also known as 1/f noise, is a signal or process with a frequency
+ * spectrum such that the power spectral density is inversely proportional to
+ * the frequency. This class generates pink noise using a filtering approach on
+ * white noise.
+ *
+ * @tparam T The type of the noise values (default is float).
+ */
 template <typename T = float>
 class PinkNoise {
  public:
+  /**
+   * @brief Constructs a PinkNoise object with a random seed.
+   */
   PinkNoise() : gen(std::random_device{}()) { reset(); }
 
+  /**
+   * @brief Constructs a PinkNoise object with a specific seed.
+   * @param seed The seed for the random number generator.
+   */
   explicit PinkNoise(uint32_t seed) : gen(seed) { reset(); }
 
+  /**
+   * @brief Generates pink noise for a given input value.
+   * @param x The input value (not used directly in this implementation).
+   * @return The generated pink noise value.
+   */
   T noise(T x) {
     // Generate white noise
     std::uniform_real_distribution<T> dist(-1, 1);
@@ -30,6 +54,11 @@ class PinkNoise {
     return pink * 0.11;  // Scale to [-1, 1]
   }
 
+  /**
+   * @brief Resets the internal state of the pink noise generator.
+   *
+   * This function reinitializes the filter coefficients with random values.
+   */
   void reset() {
     std::uniform_real_distribution<T> dist(-1, 1);
     for (auto& val : b) {
@@ -38,8 +67,8 @@ class PinkNoise {
   }
 
  private:
-  std::array<T, 7> b;
-  std::mt19937 gen;
+  std::array<T, 7> b; /**< Filter coefficients for generating pink noise. */
+  std::mt19937 gen;   /**< Random number generator. */
 };
 
 }  // namespace core::math::noise

@@ -1,19 +1,49 @@
 #pragma once
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <limits>
+#include <random>
+#include <unordered_map>
 
 #include "./noise_utils.hpp"
 
 namespace core::math::noise {
 
+/**
+ * @class WorleyNoise
+ * @brief A class to generate Worley noise in N-dimensional space.
+ *
+ * Worley noise is a type of noise that is based on the distance to the nearest
+ * feature points. This implementation supports N-dimensional noise generation
+ * and can return the K-th closest distance.
+ *
+ * @tparam N The dimensionality of the noise.
+ * @tparam T The type of the coordinates and distances (default is float).
+ * @tparam K The number of closest distances to consider (default is 1).
+ */
 template <std::size_t N, typename T = float, size_t K = 1>
 class WorleyNoise {
  public:
-  using VectorType = Vector<N, T>;
+  using VectorType =
+      Vector<N, T>; /**< Type alias for an N-dimensional vector. */
 
+  /**
+   * @brief Constructs a WorleyNoise object with a default seed.
+   */
   WorleyNoise() { init_feature_points(); }
+
+  /**
+   * @brief Constructs a WorleyNoise object with a specific seed.
+   * @param seed The seed for the random number generator.
+   */
   explicit WorleyNoise(uint32_t seed) : gen(seed) { init_feature_points(); }
 
+  /**
+   * @brief Generates Worley noise at a given point.
+   * @param point The point in N-dimensional space.
+   * @return The K-th closest distance to a feature point.
+   */
   T noise(const VectorType& point) const {
     std::array<T, K> distances;
     distances.fill(std::numeric_limits<T>::max());
@@ -63,16 +93,22 @@ class WorleyNoise {
   }
 
  private:
-  static constexpr T cell_size = T(1.0);
-  static constexpr size_t points_per_cell = 3;
+  static constexpr T cell_size = T(1.0); /**< The size of each cell. */
+  static constexpr size_t points_per_cell =
+      3; /**< The number of feature points per cell. */
 
-  std::mt19937 gen;
-  std::uniform_real_distribution<T> dist{0, cell_size};
+  std::mt19937 gen; /**< Random number generator. */
+  std::uniform_real_distribution<T> dist{
+      0, cell_size}; /**< Distribution for feature point generation. */
 
-  using CellKey = std::array<int, N>;
+  using CellKey = std::array<int, N>; /**< Type alias for a cell key. */
   std::unordered_map<CellKey, std::array<VectorType, points_per_cell>, CellHash>
-      feature_points;
+      feature_points; /**< Map to store feature points for each cell. */
 
+  /**
+   * @struct CellHash
+   * @brief A functor to hash a CellKey.
+   */
   struct CellHash {
     size_t operator()(const CellKey& key) const {
       size_t hash = 0;
@@ -83,11 +119,25 @@ class WorleyNoise {
     }
   };
 
+  /**
+   * @brief Initializes feature points for cells.
+   *
+   * This function pre-generates feature points for the origin cell (0, 0, ...,
+   * 0). In a more comprehensive implementation, you might want to pre-generate
+   * feature points for a range of cells.
+   */
   void init_feature_points() {
-    // In a real implementation, you'd generate these on demand
-    // This is simplified for demonstration
+    // Pre-generate feature points for the origin cell (0, 0, ..., 0)
+    CellKey origin_key;
+    origin_key.fill(0);
+    get_cell_points(origin_key);
   }
 
+  /**
+   * @brief Gets the feature points for a given cell.
+   * @param key The key of the cell.
+   * @return The feature points for the cell.
+   */
   const std::array<VectorType, points_per_cell>& get_cell_points(
       const CellKey& key) const {
     auto it = feature_points.find(key);

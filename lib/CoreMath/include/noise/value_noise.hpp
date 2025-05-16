@@ -4,21 +4,41 @@
 namespace core::math::noise {
 
 /**
- * @brief Value noise generator (interpolated random values)
- * @tparam N Dimension of noise
- * @tparam T Floating-point type
+ * @class ValueNoise
+ * @brief A class to generate value noise in N-dimensional space.
+ *
+ * Value noise is a type of gradient noise that generates interpolated random
+ * values. This class extends the GradientNoise class to provide value noise
+ * generation.
+ *
+ * @tparam N The dimensionality of the noise.
+ * @tparam T The type of the coordinates and noise values (default is float).
  */
 template <std::size_t N, typename T = float>
 class ValueNoise : public GradientNoise<N, T> {
  public:
-  using VectorType = Vector<N, T>;
+  using VectorType =
+      Vector<N, T>; /**< Type alias for an N-dimensional vector. */
 
   /// @name Constructors
   /// @{
+  /**
+   * @brief Constructs a ValueNoise object with a default seed.
+   */
   ValueNoise() : GradientNoise<N, T>() {}
+
+  /**
+   * @brief Constructs a ValueNoise object with a specific seed.
+   * @param seed The seed for the random number generator.
+   */
   explicit ValueNoise(uint32_t seed) : GradientNoise<N, T>(seed) {}
   /// @}
 
+  /**
+   * @brief Generates value noise at a given point.
+   * @param point The point in N-dimensional space.
+   * @return The noise value at the given point, scaled to the range [-1, 1].
+   */
   T noise(const VectorType& point) const override {
     std::array<int, N> cube;
     VectorType frac;
@@ -56,6 +76,17 @@ class ValueNoise : public GradientNoise<N, T> {
     return result * 2 - 1;  // Scale to [-1, 1]
   }
 
+  /**
+   * @brief Generates fractal value noise at a given point.
+   * @param point The point in N-dimensional space.
+   * @param octaves The number of octaves to use for the fractal noise (default
+   * is 4).
+   * @param persistence The persistence value for the fractal noise (default is
+   * 0.5).
+   * @param lacunarity The lacunarity value for the fractal noise (default
+   * is 2.0).
+   * @return The fractal noise value at the given point.
+   */
   T fractal(const VectorType& point, size_t octaves = 4, T persistence = T(0.5),
             T lacunarity = T(2.0)) const {
     T result = 0;
