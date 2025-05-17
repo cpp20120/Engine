@@ -565,8 +565,11 @@ constexpr auto multi_level_smart_cast_impl(From from, TypeList list) {
  * @brief Log debug message
  * @param message Message to log
  */
-inline void debug_log(const char* message) {
-  std::cerr << "[smart_cast] " << message << std::endl;
+inline void debug_log(
+    std::string_view message,
+    const std::source_location& location = std::source_location::current()) {
+  std::cerr << "[smart_cast] " << location.file_name() << ":" << location.line()
+            << " [" << location.function_name() << "] " << message << std::endl;
 }
 
 /**
@@ -580,16 +583,19 @@ inline void debug_log(const char* message) {
  * @return std::optional<To> Cast result or nullopt
  */
 template <typename To, typename From, typename TypeList>
-constexpr std::optional<To> debug_smart_cast_impl(From from, TypeList list,
-                                                  const char* location = "") {
+constexpr std::optional<To> debug_smart_cast_impl(
+    From from, TypeList list,
+    const std::source_location& location = std::source_location::current()) {
   if (auto result = smart_cast<To>(from, list)) {
     return result;
   }
-  debug_log((std::string("Failed cast from ") + typeid(From).name() + " to " +
-             typeid(To).name() + " at " + location)
-                .c_str());
+
+  debug::debug_log(std::string("Failed cast from ") + typeid(From).name() +
+                       " to " + typeid(To).name(),
+                   location);
   return std::nullopt;
 }
+
 
 }  // namespace detail
 
